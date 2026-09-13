@@ -87,7 +87,10 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
   return (
     // Mobile order: Canvas → OperationBar → CodePanel → PlaybackControls (§12): the DOM order.
     // From md up: canvas spans the full width; Operation + Playback stack beside a tall Pseudocode.
-    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
+    // The Playback row is 1fr and its card self-starts, so Code's surplus height lands in that
+    // row instead of stretching Operation and Playback. At lg the Code card self-starts too and
+    // is capped at its grid area, so it sizes to the listing and scrolls only past the column height.
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2 md:grid-rows-[auto_auto_1fr] lg:min-h-0 lg:flex-1">
       <Card className="min-w-0 md:col-span-2">
         <CardContent>
           <Canvas snapshot={displayedSnapshot} variant={variant} />
@@ -122,11 +125,11 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
         </CardContent>
       </Card>
 
-      <Card className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-2">
+      <Card className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-2 lg:max-h-full lg:min-h-0 lg:self-start">
         <CardHeader>
           <CardTitle className="text-base">Code</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="lg:flex lg:min-h-0 lg:flex-1 lg:flex-col">
           <CodePanel
             lines={currentOperation ? (topic.pseudocode[currentOperation.id] ?? []) : []}
             snippets={currentOperation ? topic.snippets[currentOperation.id] : undefined}
@@ -136,7 +139,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
         </CardContent>
       </Card>
 
-      <Card className="min-w-0 md:col-start-1 md:row-start-3">
+      <Card className="min-w-0 md:col-start-1 md:row-start-3 md:self-start">
         <CardHeader>
           <CardTitle className="text-base">Playback</CardTitle>
         </CardHeader>

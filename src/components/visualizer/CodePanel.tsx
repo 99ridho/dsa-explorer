@@ -1,6 +1,6 @@
 // SPEC.md §8: numbered pseudocode or a language snippet, with the current step's line highlighted.
 // Lines soft-wrap with a hanging indent; the block never scrolls horizontally.
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { LANGUAGE_LABEL } from '@/lib/snippets'
@@ -43,9 +43,23 @@ export function CodePanel({ lines, snippets, currentStep, operationLabel }: Code
   const shown: SnippetLine[] =
     view === 'pseudocode' ? lines.map((text, i) => ({ text, pseudo: i + 1 })) : (snippets?.[view] ?? [])
   const highlightLine = currentStep?.highlightLine
+  const listRef = useRef<HTMLOListElement>(null)
+
+  // Keep the highlighted line inside the listing's own scroll box. Scrolling the <ol> directly
+  // (rather than scrollIntoView) never moves the page on viewports where the listing doesn't scroll.
+  useEffect(() => {
+    const list = listRef.current
+    if (!list || list.scrollHeight <= list.clientHeight) return
+    const active = list.querySelector<HTMLLIElement>('[aria-current="step"]')
+    if (!active) return
+    const top = active.offsetTop
+    const bottom = top + active.offsetHeight
+    if (top < list.scrollTop) list.scrollTop = top
+    else if (bottom > list.scrollTop + list.clientHeight) list.scrollTop = bottom - list.clientHeight
+  }, [highlightLine, view])
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3 lg:min-h-0 lg:flex-1">
       <div className="min-h-12 rounded-lg bg-muted px-3 py-2 text-sm" aria-live="polite">
         {currentStep ? (
           <>
@@ -82,7 +96,12 @@ export function CodePanel({ lines, snippets, currentStep, operationLabel }: Code
             </TabsList>
           </Tabs>
 
-          <ol className="rounded-lg border bg-card p-3 font-mono text-xs leading-5" aria-label={view === 'pseudocode' ? 'Pseudocode' : `${LANGUAGE_LABEL[view]} code`}>
+          <ol
+            ref={listRef}
+            tabIndex={0}
+            className="relative rounded-lg border bg-card p-3 font-mono text-xs leading-5 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none lg:overflow-y-auto"
+            aria-label={view === 'pseudocode' ? 'Pseudocode' : `${LANGUAGE_LABEL[view]} code`}
+          >
             {shown.map((line, i) => {
               const lineNo = i + 1
               const active = highlightLine !== undefined && line.pseudo === highlightLine
