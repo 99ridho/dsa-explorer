@@ -33,6 +33,12 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Layout tests (SPEC.md §12)
+        run: npm run test:e2e
+
   build-and-push:
     needs: check
     runs-on: ubuntu-latest

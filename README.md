@@ -10,6 +10,7 @@ See `SPEC.md` for the full specification and `CLAUDE.md` for the codebase guide.
 npm install
 npm run dev        # http://localhost:5173
 npm test           # vitest
+npm run test:e2e   # playwright layout checks (once: npx playwright install chromium)
 npm run build      # tsc -b && vite build, outputs dist/
 ```
 
