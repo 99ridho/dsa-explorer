@@ -2,7 +2,15 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 
 const topics = [
+  ['complexity', 'Week-1-Complexity.md'],
+  ['arrays', 'Week-2-ArraysDataRepresentation.md'],
+  ['queue', 'Week-3-Queue.md'],
+  ['stack', 'Week-4-Stack.md'],
+  ['sorting', 'Week-5-Sorting.md'],
+  ['linked-list', 'Week-6-LinkedList.md'],
+  ['searching', 'Week-7-Searching.md'],
   ['bst', 'Week-9-BST.md'],
+  ['b-tree', 'Week-10-BTree.md'],
   ['binary-heap', 'Week-11-BinaryHeap.md'],
   ['hash-table', 'Week-12-HashTable.md'],
   ['graph', 'Week-13-15-Graph.md'],

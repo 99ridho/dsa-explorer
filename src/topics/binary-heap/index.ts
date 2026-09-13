@@ -24,7 +24,7 @@ function randomValues(): number[] {
 export const binaryHeap: TopicModule<HeapState, HeapSnapshot> = {
   slug: 'binary-heap',
   title: 'Binary Heap',
-  weekLabel: 'Weeks 10–11',
+  weekLabel: 'Week 11',
   operations: heapOperations,
   pseudocode: heapPseudocode,
   snippets: heapSnippets,

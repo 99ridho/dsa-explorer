@@ -29,7 +29,7 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - The usage-mode question is already answered: **DURING**. Apply the rules while writing. Do not ask the user again.
 - Before delivering copy, run the copywriting skill checklist and Delivery Gate Block 1 and include the PASS lines with evidence in your report.
 - `npm run lint:copy` is the mechanical floor (em dash U+2014, spaced double hyphen). It runs inside `npm run lint` and in CI. Passing it is necessary, not sufficient.
-- Carve-outs: the en dash in numeric ranges (`Weeks 10–11`); the `←/→` glyphs in the keyboard hint, which name real keys; bold-label bullets in this file, which are a documentation convention.
+- Carve-outs: the en dash in numeric ranges (`Weeks 13–15`); the `←/→` glyphs in the keyboard hint, which name real keys; bold-label bullets in this file, which are a documentation convention.
 - Narration house style (SPEC §18): one plain present-tense sentence per step, names the key or node, ends with a period; `so` for cause and effect, a colon for a result, never an arrow or a dash. The SPEC §10 tables are the canonical examples; write a new topic's table in that style first, then implement `run()` against it.
 - The course references in `references/` are also under the standard, but only punctuation may change there; wording and citations are frozen (SPEC §11).
 - Past audits live in `anti-slop/audit-NNN-YYYY-MM-DD.md`. A new audit gets the next number.
@@ -73,7 +73,7 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `hash-table` | Complete: insert / search / delete for chaining and for linear probing (six ops, three visible per variant), two canvases, 9 tests. Probing delete rehashes the cluster. |
 | `graph` | Complete: add edge / BFS / DFS / connected components (undirected) / topological sort and Kosaraju-Sharir strong components (directed), force-layout SVG with arrowheads when directed, 10 tests. |
 
-All four v1 topics are implemented; SPEC §15 roadmap rows (queue, stack, sorting, linked list, B-tree) are the next candidates and follow the §14 recipe. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
+SPEC §10.5 to §10.12 (2026-09-13) specify the remaining eight topics: `complexity`, `arrays`, `queue`, `stack`, `sorting`, `linked-list`, `searching`, `b-tree`. Their `content.ts` files are generated and committed; the other module files land phase by phase (stack, queue, linked list; sorting, searching; B-tree; complexity, arrays). Registry order is week order, so add each module at its week position. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 
 ## Conventions
 
