@@ -35,3 +35,48 @@ export function layoutBinaryTree<Id extends string | number>(
   visit(rootId, 0)
   return positions
 }
+
+export interface MultiwayLayoutOptions {
+  hGap?: number // space between sibling subtrees
+  vGap?: number
+}
+
+/**
+ * Layout for nodes of varying width (a B-tree node is a run of key boxes): a post-order pass
+ * sizes each subtree, children pack left to right, and a parent centers over its children.
+ * `x` is the node's center; `y = depth × vGap`. SPEC.md §10.12 "Canvas layout".
+ */
+export function layoutMultiwayTree<Id extends string | number>(
+  rootId: Id | null,
+  getChildren: (id: Id) => Id[],
+  getWidth: (id: Id) => number,
+  { hGap = 12, vGap = 70 }: MultiwayLayoutOptions = {},
+): Record<Id, TreePosition> {
+  const positions = {} as Record<Id, TreePosition>
+  const subtreeWidth = {} as Record<Id, number>
+
+  const measure = (id: Id): number => {
+    const children = getChildren(id)
+    const kids = children.reduce((sum, c) => sum + measure(c), 0) + Math.max(0, children.length - 1) * hGap
+    subtreeWidth[id] = Math.max(getWidth(id), kids)
+    return subtreeWidth[id]
+  }
+
+  const place = (id: Id, left: number, depth: number) => {
+    const width = subtreeWidth[id]
+    positions[id] = { x: left + width / 2, y: depth * vGap }
+    const children = getChildren(id)
+    const kidsWidth = children.reduce((sum, c) => sum + subtreeWidth[c], 0) + Math.max(0, children.length - 1) * hGap
+    let cursor = left + (width - kidsWidth) / 2
+    for (const c of children) {
+      place(c, cursor, depth + 1)
+      cursor += subtreeWidth[c] + hGap
+    }
+  }
+
+  if (rootId !== null) {
+    measure(rootId)
+    place(rootId, 0, 0)
+  }
+  return positions
+}

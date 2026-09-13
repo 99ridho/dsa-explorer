@@ -87,9 +87,9 @@ export function OperationBar({
             {inputKind !== 'none' && (
               <Input
                 id={inputId}
-                className="min-w-28 flex-1 font-mono"
-                inputMode={inputKind === 'edge' ? 'text' : 'numeric'}
-                placeholder={INPUT_PLACEHOLDER[inputKind]}
+                className={inputKind === 'text' ? 'min-w-56 flex-1 font-mono' : 'min-w-28 flex-1 font-mono'}
+                inputMode={inputKind === 'edge' || inputKind === 'text' ? 'text' : 'numeric'}
+                placeholder={current?.placeholder ?? INPUT_PLACEHOLDER[inputKind]}
                 value={inputText}
                 onChange={(e) => onInputChange(e.target.value)}
                 aria-label={`${current?.label ?? 'Operation'} input`}

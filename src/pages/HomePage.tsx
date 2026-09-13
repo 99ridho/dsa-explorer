@@ -9,7 +9,7 @@ export function HomePage() {
       <section className="space-y-3">
         <h1 className="text-3xl font-bold tracking-tight">DSA Interactive Explorer</h1>
         <p className="max-w-prose text-muted-foreground">
-          Build and operate on the data structures from Weeks 9–15 of the course, one step at a time. Each
+          Build and operate on the data structures and algorithms from Weeks 1–15 of the course, one step at a time. Each
           operation animates against its pseudocode; scrub back and forth to see how the structure changes.
         </p>
       </section>

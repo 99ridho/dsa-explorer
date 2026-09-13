@@ -1,8 +1,8 @@
 // Parses the OperationBar's text input into the shape each `inputKind` expects (types/step-engine.ts).
-import type { ArrayInput, EdgeInput, KeyInput, OperationDefinition } from '@/types/step-engine'
+import type { ArrayInput, EdgeInput, KeyInput, OperationDefinition, TextInput } from '@/types/step-engine'
 
 export type ParsedInput =
-  | { ok: true; value: KeyInput | ArrayInput | EdgeInput | undefined }
+  | { ok: true; value: KeyInput | ArrayInput | EdgeInput | TextInput | undefined }
   | { ok: false; error: string }
 
 const INT = /^-?\d+$/
@@ -27,6 +27,10 @@ export function parseInput(kind: OperationDefinition['inputKind'], raw: string):
       if (!m) return { ok: false, error: 'Enter an edge as A-B (or "A B").' }
       return { ok: true, value: { from: m[1], to: m[2] } }
     }
+    case 'text': {
+      if (text === '') return { ok: false, error: 'Enter an expression, e.g. ( 1 + ( 2 * 3 ) ).' }
+      return { ok: true, value: text }
+    }
   }
 }
 
@@ -34,5 +38,6 @@ export const INPUT_PLACEHOLDER: Record<OperationDefinition['inputKind'], string>
   key: 'Key, e.g. 42',
   array: 'e.g. 5, 3, 8, 1',
   edge: 'e.g. A-B',
+  text: 'e.g. ( 1 + ( 2 * 3 ) )',
   none: '',
 }

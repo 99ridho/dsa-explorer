@@ -29,7 +29,7 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - The usage-mode question is already answered: **DURING**. Apply the rules while writing. Do not ask the user again.
 - Before delivering copy, run the copywriting skill checklist and Delivery Gate Block 1 and include the PASS lines with evidence in your report.
 - `npm run lint:copy` is the mechanical floor (em dash U+2014, spaced double hyphen). It runs inside `npm run lint` and in CI. Passing it is necessary, not sufficient.
-- Carve-outs: the en dash in numeric ranges (`Weeks 10–11`); the `←/→` glyphs in the keyboard hint, which name real keys; bold-label bullets in this file, which are a documentation convention.
+- Carve-outs: the en dash in numeric ranges (`Weeks 13–15`); the `←/→` glyphs in the keyboard hint, which name real keys; bold-label bullets in this file, which are a documentation convention.
 - Narration house style (SPEC §18): one plain present-tense sentence per step, names the key or node, ends with a period; `so` for cause and effect, a colon for a result, never an arrow or a dash. The SPEC §10 tables are the canonical examples; write a new topic's table in that style first, then implement `run()` against it.
 - The course references in `references/` are also under the standard, but only punctuation may change there; wording and citations are frozen (SPEC §11).
 - Past audits live in `anti-slop/audit-NNN-YYYY-MM-DD.md`. A new audit gets the next number.
@@ -48,6 +48,11 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Heap pseudocode has no blank lines.** The SINK block is appended to the remove, build-heap, and heapsort listings so sub-steps highlight real lines; `highlightLine` values in `operations.ts` are per listing (see the `SinkLines` offsets).
 - **BST node ids are `k${key}`** (`nodeId()` in `src/topics/bst/types.ts`), because keys are unique, so the id is stable across snapshots and Framer Motion can animate a node between positions.
 - **Hash table `M` is fixed at 11** (`HASH_TABLE_M`); Framer Motion (`motion/react`) is the animation layer. Both were §17 open items, decided 2026-09-13.
+- **Linked snapshots store real links** (`nodes` map + `firstId`/`lastId` + `nextId`, helpers in `src/lib/linked-nodes.ts`), never an ordered array: a step can show a node that exists but is not yet reachable, and `nextId` lives in the snapshot so `run()` stays pure. Node ids are `n${nextId}`.
+- **Row canvases are shared.** `ArrayRow` and `LinkedRow` in `src/components/visualizer/canvas/` draw every array-backed and linked topic; highlight-kind classes live in `kinds.ts` there. A topic's `canvas.tsx` only maps its snapshot to cells.
+- **`inputKind: 'text'`** is a free-form field (Stack's Evaluate expression). An operation may set `placeholder` to override the per-kind default in `input-parsing.ts`.
+- **B-tree `M` is fixed at 4** (`BTREE_M`). Guide keys always equal their subtree's smallest key (one line beyond algs4, SPEC §10.12); `layoutMultiwayTree` in `tree-layout.ts` positions nodes by subtree width.
+- **Counts pluralize in narration** (`plural()` in `linked-nodes.ts`): "1 item", never "1 items".
 
 ## Architecture
 
@@ -72,8 +77,16 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `binary-heap` | Complete: insert / remove max or min / build heap / heapsort, tree + array dual view, 7 tests. Min mode flips every comparison and every narration word. |
 | `hash-table` | Complete: insert / search / delete for chaining and for linear probing (six ops, three visible per variant), two canvases, 9 tests. Probing delete rehashes the cluster. |
 | `graph` | Complete: add edge / BFS / DFS / connected components (undirected) / topological sort and Kosaraju-Sharir strong components (directed), force-layout SVG with arrowheads when directed, 10 tests. |
+| `complexity` | Complete: doubling ratio test / count accesses for N on 1-sum, 2-sum, 3-sum (variant `problem`), exact brute-force counts, table plus ratio bars, 6 tests. |
+| `arrays` | Complete: create / access / set / resize / memory cost, with length and byte badges on every step, 7 tests. |
+| `queue` | Complete: enqueue / dequeue on a resizing array (wrap-around, doubling, halving narrated) or a linked list (variant `impl`), 12 tests. |
+| `stack` | Complete: push / pop on a resizing array or a linked list, plus Evaluate expression (Dijkstra's two-stack algorithm, `inputKind: 'text'`), 11 tests. |
+| `linked-list` | Complete: insert first / insert last / remove first / traverse, 8 tests. |
+| `sorting` | Complete: load / selection sort / insertion sort / shellsort with compare and exchange counts as badges, 7 tests. |
+| `searching` | Complete: get / put on an unordered list (sequential search) or an ordered array (binary search with rank), FrequencyCounter values, 9 tests. |
+| `b-tree` | Complete: get / put with leaf, parent, and root splits (algs4 `BTree.java`, M = 4, guide keys kept equal to the subtree minimum), multiway SVG layout, 10 tests. |
 
-All four v1 topics are implemented; SPEC §15 roadmap rows (queue, stack, sorting, linked list, B-tree) are the next candidates and follow the §14 recipe. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
+All twelve RPS topics are implemented (SPEC §10.1 to §10.12, expansion of 2026-09-13 and 2026-09-14). Registry order is week order, so a new module goes at its week position. Row-shaped topics reuse `ArrayRow` / `LinkedRow`; trees reuse `layoutBinaryTree` / `layoutMultiwayTree`. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 
 ## Conventions
 

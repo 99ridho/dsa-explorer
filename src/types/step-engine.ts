@@ -22,7 +22,8 @@ export type OperationFn<TState, TInput, TSnapshot> = (
 export interface OperationDefinition<TState = unknown, TInput = unknown, TSnapshot = unknown> {
   id: string // e.g. "insert"
   label: string // e.g. "Insert"
-  inputKind: 'key' | 'edge' | 'array' | 'none'
+  inputKind: 'key' | 'edge' | 'array' | 'none' | 'text'
+  placeholder?: string // overrides the placeholder OperationBar shows for this inputKind
   variants?: string[] // variant values this operation applies to; absent means all
   run: OperationFn<TState, TInput, TSnapshot>
 }
@@ -61,3 +62,4 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 export type KeyInput = number
 export type ArrayInput = number[]
 export type EdgeInput = { from: string; to: string }
+export type TextInput = string
