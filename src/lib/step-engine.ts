@@ -20,7 +20,12 @@ export interface Playback<T> {
   reset: () => void
 }
 
-export function usePlayback<T>(steps: Step<T>[]): Playback<T> {
+export interface PlaybackOptions {
+  /** Start playing as soon as a new, non-empty steps array arrives (Go). Default true. */
+  autoplay?: boolean
+}
+
+export function usePlayback<T>(steps: Step<T>[], { autoplay = true }: PlaybackOptions = {}): Playback<T> {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [isPlaying, setIsPlaying] = useState(false)
   const [speedMs, setSpeedMsState] = useState(DEFAULT_SPEED_MS)
@@ -32,13 +37,14 @@ export function usePlayback<T>(steps: Step<T>[]): Playback<T> {
     setIsPlaying(false)
   }, [])
 
-  // A new steps array (new operation, or Randomize/Reset clearing it) restarts playback.
+  // A new steps array (new operation, or Randomize/Reset clearing it) restarts playback,
+  // and a new operation starts playing on its own so Go is one click.
   // Adjusting state during render avoids an extra effect-driven commit.
   const [prevSteps, setPrevSteps] = useState(steps)
   if (steps !== prevSteps) {
     setPrevSteps(steps)
     setCurrentStepIndex(0)
-    setIsPlaying(false)
+    setIsPlaying(autoplay && steps.length > 1)
   }
 
   useEffect(() => {

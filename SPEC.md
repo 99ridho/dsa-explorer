@@ -200,7 +200,7 @@ function usePlayback<T>(steps: Step<T>[]) {
 
 Rules:
 - `steps` is always precomputed in full before playback starts (an operation's `run()` returns the entire array up front). This is what makes scrubbing and step-backward trivial: there's no partial-execution state to reconstruct, just an index into an array of already-known snapshots.
-- Triggering a new operation replaces `steps` and calls `reset()`.
+- Triggering a new operation (Go) replaces `steps`, calls `reset()`, and starts playing immediately; the student can pause, scrub, or step at any time. A one-step result just shows that step.
 - "Randomize" and "Reset" (in `OperationBar`) bypass the step engine entirely: they mutate `TState` directly and clear `steps` to `[]`, since they aren't meant to be scrubbed.
 
 ## 10. Per-Topic Specifications
