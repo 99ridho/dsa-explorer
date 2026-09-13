@@ -1,6 +1,7 @@
 // SPEC.md §10.4: pseudocode, verbatim.
 
 export const graphPseudocode: Record<string, string[]> = {
+  'add-edge': ['ADD_EDGE(v, w):', '  create v and w if they do not exist', '  adj[v].add(w); if undirected, adj[w].add(v)'],
   bfs: [
     'BFS(source):',
     '  mark source visited; enqueue source',
@@ -11,14 +12,7 @@ export const graphPseudocode: Record<string, string[]> = {
     '        mark w visited; edgeTo[w] = v',
     '        enqueue w',
   ],
-  dfs: [
-    'DFS(v):',
-    '  mark v visited',
-    '  for each w adjacent to v:',
-    '    if w not visited:',
-    '      edgeTo[w] = v',
-    '      DFS(w)',
-  ],
+  dfs: ['DFS(v):', '  mark v visited', '  for each w adjacent to v:', '    if w not visited:', '      edgeTo[w] = v', '      DFS(w)'],
   'connected-components': [
     'CONNECTED_COMPONENTS():',
     '  count = 0',

@@ -132,6 +132,7 @@ export interface OperationDefinition<TState = unknown, TInput = unknown, TSnapsh
   id: string;                       // e.g. "insert"
   label: string;                    // e.g. "Insert"
   inputKind: "key" | "edge" | "array" | "none";
+  variants?: string[];              // variant values this operation applies to; absent means all
   run: OperationFn<TState, TInput, TSnapshot>;
 }
 
@@ -151,12 +152,12 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   CanvasComponent: React.ComponentType<{ snapshot: TSnapshot; variant?: string }>;
   content: { realWorldUsage: string; coreMaterial: string };
   variant?: VariantConfig;
-  createInitialState: () => TState;
+  createInitialState: (variant?: string) => TState; // Reset uses the active variant
   randomize: (state: TState, variant?: string) => TState; // instant, no animation
 }
 ```
 
-`registry.ts` exports `const topics: TopicModule[]`, which drives both `AppSidebar` and `TopicPage`'s lookup. **Adding a new topic later means adding one entry here, with no other file changes.**
+`registry.ts` exports `const topics: TopicModule[]`, which drives both `AppSidebar` and `TopicPage`'s lookup. `VisualizerShell` shows only the operations whose `variants` include the active variant (or that declare none), and re-selects the first visible operation when the variant changes. **Adding a new topic later means adding one entry here, with no other file changes.**
 
 ## 8. Shared UI Components
 
@@ -303,7 +304,6 @@ type HeapState = HeapSnapshot;
 2    n = n + 1
 3    array[n] = value
 4    SWIM(n)
-
 5  SWIM(k):
 6    while k > 1 and array[k/2] < array[k]:
 7      SWAP(k, k/2)
@@ -312,8 +312,8 @@ type HeapState = HeapSnapshot;
 
 | Trigger | Line | Description |
 |---|---|---|
-| Append | 2–3 | "Placing `{value}` at the end of the heap (index `{n}`)." |
-| Compare with parent | 6 | "Comparing `{array[k]}` with parent `{array[k/2]}`." |
+| Append | 3 | "Placing `{value}` at the end of the heap (index `{n}`)." |
+| Compare with parent | 6 | "Comparing `{array[k]}` with its parent `{array[k/2]}`." |
 | Swap needed | 7 | "`{array[k]}` is larger than its parent, so it swims up." |
 | Stop | 6 fails | "Heap order restored." |
 
@@ -326,7 +326,6 @@ type HeapState = HeapSnapshot;
 4    n = n - 1
 5    SINK(1)
 6    return extreme
-
 7  SINK(k):
 8    while 2k <= n:
 9      j = 2k
@@ -338,10 +337,12 @@ type HeapState = HeapSnapshot;
 
 | Trigger | Line | Description |
 |---|---|---|
-| Take root | 2–4 | "Removing `{extreme}` from the root; moving last element `{array[n+1]}` to the top." |
-| Pick larger child | 9–10 | "Comparing children at `{j}` and `{j+1}`." |
-| Swap | 11–12 | "`{array[k]}` is smaller than its child `{array[j]}`, so it sinks down." |
+| Take root | 2 | "Removing `{extreme}` from the root. Moving the last element `{array[n]}` to the top." (snapshot after the swap; `n` already decremented, so index `n+1` renders outside the heap) |
+| Pick larger child | 10 | "Comparing the children at `{j}` and `{j+1}`." (single child: "Only one child, at `{j}`.") |
+| Swap | 12 | "`{array[k]}` is smaller than its child `{array[j]}`, so it sinks down." |
 | Stop | 11 | "Heap order restored." |
+
+The final snapshot truncates the array to `n`. The operation is listed as **Remove max** in max mode and **Remove min** in min mode (two `OperationDefinition`s with `variants`, one implementation). In min mode every comparison flips and so does every narration word: `larger` becomes `smaller`, and the swim/sink sentences read "`{array[k]}` is smaller than its parent, so it swims up." and "`{array[k]}` is larger than its child `{array[j]}`, so it sinks down."
 
 **Operation: Build-heap (from a custom/random array)**
 
@@ -350,9 +351,22 @@ type HeapState = HeapSnapshot;
 2    array = a; n = length(a)
 3    for k = n/2 downto 1:
 4      SINK(k)
+5  SINK(k):
+6    while 2k <= n:
+7      j = 2k
+8      if j < n and array[j] < array[j+1]: j = j + 1
+9      if array[k] >= array[j]: break
+10     SWAP(k, j)
+11     k = j
 ```
 
-Each iteration of line 3–4 emits the full SINK step sequence for that `k`, so the student watches the classic right-to-left heapify sweep.
+| Trigger | Line | Description |
+|---|---|---|
+| Start | 2 | "Building a heap from `{list}`." |
+| Each `k` | 4 | "Sinking index `{k}`." |
+| SINK steps | 8, 10, 9 | the Remove-max sink table, renumbered to this listing |
+
+Each iteration of line 3–4 emits the full SINK step sequence for that `k`, so the student watches the classic right-to-left heapify sweep. The SINK listing is repeated here so those sub-steps highlight real lines.
 
 **Operation: Heapsort**
 
@@ -363,9 +377,24 @@ Each iteration of line 3–4 emits the full SINK step sequence for that `k`, so 
 4      SWAP(1, n)
 5      n = n - 1
 6      SINK(1)
+7  SINK(k):
+8    while 2k <= n:
+9      j = 2k
+10     if j < n and array[j] < array[j+1]: j = j + 1
+11     if array[k] >= array[j]: break
+12     SWAP(k, j)
+13     k = j
 ```
 
-Reuses Build-heap and Sink step sequences; each pass through lines 4–6 marks index `n+1` as `highlight.kind: "sorted"` (rendered visually distinct, e.g. muted/greyed, and excluded from further sink comparisons).
+| Trigger | Line | Description |
+|---|---|---|
+| Build | 2 | the Build-heap step sequence, all highlighted on line 2 |
+| Swap root out | 4 | "Swapping the root `{array[1]}` with index `{n}`." `highlight.kind: "swapping"` |
+| Shrink | 5 | "`{array[n]}` is in its final position." `highlight.kind: "sorted"` on index `n` (before the decrement) |
+| SINK steps | 10, 12, 11 | the Remove-max sink table, renumbered to this listing |
+| Done | 3 | "Every element is in place. The array is sorted." |
+
+Indices above `n` are rendered muted and are excluded from further sink comparisons. Heapsort runs on the current heap array (no input); Build-heap takes a custom array.
 
 ### 10.3 Hash Table, `/topic/hash-table`
 
@@ -400,7 +429,18 @@ type HashTableState = HashTableSnapshot;
 9    remove key from bucket[i] if present
 ```
 
-Every operation's first step highlights the computed index: *"`{key} mod {M} = {i}`, so use bucket `{i}`."* Then a second step narrates the linked-list scan/append/removal within that bucket.
+Operation ids are `chain-insert`, `chain-search`, `chain-delete` (`variants: ["chaining"]`), labeled Insert, Search, Delete.
+
+| Trigger | Line | Description | Highlight |
+|---|---|---|---|
+| Hash (every op) | 2 / 5 / 8 | "`{key}` mod `{M}` = `{i}`, so use bucket `{i}`." | `{ bucket: i }` |
+| Compare with a node (every op) | 3 / 6 / 9 | "Comparing `{key}` with `{node}` in bucket `{i}`." | `{ bucket: i, index }` |
+| Insert, key absent | 3 | "Appending `{key}` to bucket `{i}`." | new index |
+| Insert, key present | 3 | "`{key}` is already in bucket `{i}`, so nothing changes." | matching index |
+| Search hit | 6 | "Found `{key}` in bucket `{i}`." | matching index |
+| Search miss | 6 | "Reached the end of bucket `{i}`. `{key}` is not in the table." | `{ bucket: i }` |
+| Delete, present | 9 | "Removing `{key}` from bucket `{i}`." | `{ bucket: i }` (after removal) |
+| Delete, absent | 9 | the search-miss sentence | `{ bucket: i }` |
 
 **Operations: Linear Probing**
 
@@ -417,9 +457,30 @@ Every operation's first step highlights the computed index: *"`{key} mod {M} = {
 9      if slot[i] == key: return HIT
 10     i = (i + 1) mod M
 11   return MISS
+
+12 PROBE_DELETE(key):
+13   i = HASH(key); probe until slot[i] == key or slot[i] is empty
+14   if slot[i] is empty: return MISS
+15   slot[i] = EMPTY
+16   for each key in the cluster after i: remove it and PROBE_INSERT it again
 ```
 
-Each probe (lines 3–4 / 8–10) is its own step: *"Slot `{i}` is occupied by `{slot[i]}`. Probe the next slot."* Deletion for open addressing is the classic "remove then rehash the cluster" approach: after removing the key, walk forward from that slot re-inserting every key found until an empty slot is reached, so search correctness is preserved.
+Operation ids are `probe-insert`, `probe-search`, `probe-delete` (`variants: ["probing"]`), labeled Insert, Search, Delete. The three listings above are one block so line numbers are unique.
+
+| Trigger | Line | Description | Highlight kind |
+|---|---|---|---|
+| Hash (every op) | 2 / 7 / 13 | "`{key}` mod `{M}` = `{i}`, so start at slot `{i}`." | `probing` |
+| Probe past an occupied slot | 3 / 8 / 13 | "Slot `{i}` is occupied by `{slot[i]}`. Probe the next slot." | `probing` |
+| Insert, empty slot | 5 | "Slot `{i}` is empty. Placing `{key}` here." | `found` |
+| Insert, duplicate | 3 | "`{key}` is already in slot `{i}`." | `found` |
+| Insert, table full | 3 | "Every slot is occupied, so `{key}` cannot be inserted." | none |
+| Search hit | 9 | "Slot `{i}` holds `{key}`: HIT." | `found` |
+| Search miss | 11 | "Slot `{i}` is empty: MISS. `{key}` is not in the table." | `empty` |
+| Delete, absent | 14 | the search-miss sentence | `empty` |
+| Delete, remove | 15 | "Removing `{key}` from slot `{i}`." | `empty` |
+| Delete, rehash | 16 | "Reinserting `{v}` from slot `{j}` so later searches still find it." followed by that key's probe steps (lines 13, 5) | `probing`, `found` |
+
+Deletion for open addressing is the classic "remove then rehash the cluster" approach: after removing the key, walk forward from that slot re-inserting every key found until an empty slot is reached, so search correctness is preserved.
 
 ### 10.4 Graph, `/topic/graph`
 
@@ -436,6 +497,10 @@ type GraphState = GraphSnapshot;
 
 **Canvas layout:** positions come from `d3-force` (charge + link forces), computed once when the vertex/edge set changes and cached, not recomputed every animation frame. Directed edges render with an arrowhead marker; undirected without.
 
+**Vertices** are integers `0..V-1` (the algs4 convention used in the course text), capped at 10, so a BFS or DFS source is a `key` input. Undirected edges are stored once with `from < to`.
+
+**Operation: Add edge** (`inputKind: "edge"`, input `2-5`, all variants). One step: "Added edge `{v}` to `{w}`." (undirected: "Added edge between `{v}` and `{w}`."). Vertices that do not exist yet are created up to the cap, and the layout is recomputed. A duplicate edge narrates "Edge `{v}`-`{w}` already exists." and a self-loop "Self-loops are not used in this course." Both leave the graph unchanged. BFS and DFS on a missing source narrate "Vertex `{s}` does not exist." as their only step.
+
 **Operation: BFS**
 
 ```
@@ -451,12 +516,35 @@ type GraphState = GraphSnapshot;
 
 | Trigger | Line | Description |
 |---|---|---|
-| Start | 2 | "Starting BFS from `{source}`." vertex → `"frontier"` |
-| Dequeue | 4 | "Processing `{v}`." vertex → `"visiting"` |
-| Check neighbor | 5–6 | "Checking neighbor `{w}`." edge → `"active"` |
-| Mark & enqueue | 7–8 | "`{w}` is new. Mark it visited and enqueue it." vertex → `"frontier"`, edge → `"tree"` |
+| Start | 2 | "Starting BFS from `{source}`." vertex becomes `"frontier"` |
+| Dequeue | 4 | "Processing `{v}`." vertex becomes `"visiting"` |
+| Check neighbor | 5 | "Checking neighbor `{w}` of `{v}`." edge becomes `"active"` |
+| Mark & enqueue | 7 | "`{w}` is new. Mark it visited and enqueue it." vertex becomes `"frontier"`, edge becomes `"tree"` |
+| Already visited | 6 | "`{w}` is already visited." |
+| Done with v | 4 | after its neighbors, `v` becomes `"visited"` (no extra step; applied on the next dequeue) |
 
-**Operation: DFS**: same shape as BFS but recursive (stack via call frames instead of an explicit queue); step table mirrors BFS's with "recursing into `{w}`" language instead of "enqueuing."
+`variables.queue` shows the queue contents on every step.
+
+**Operation: DFS**
+
+```
+1  DFS(v):
+2    mark v visited
+3    for each w adjacent to v:
+4      if w not visited:
+5        edgeTo[w] = v
+6        DFS(w)
+```
+
+| Trigger | Line | Description |
+|---|---|---|
+| Enter v | 2 | "Visiting `{v}`." vertex becomes `"visiting"` |
+| Check neighbor | 3 | "Checking neighbor `{w}` of `{v}`." edge becomes `"active"` |
+| Already visited | 4 | "`{w}` is already visited." |
+| Recurse | 6 | "`{w}` is unvisited. Recursing into `{w}`." edge becomes `"tree"`, then the subtree's steps |
+| Return | 3 | "Finished `{v}`." vertex becomes `"visited"` |
+
+`variables.stack` shows the call stack on every step.
 
 **Operation: Connected Components (undirected only)**
 
@@ -469,7 +557,7 @@ type GraphState = GraphSnapshot;
 6        DFS(v), assigning component = count to every reached vertex
 ```
 
-Runs the DFS step sequence per component, tagging `vertex.component` and using a distinct highlight color per component index.
+Runs the DFS step sequence per component, tagging `vertex.component` and using a distinct highlight color per component index. Line 4 narrates each start: "`{v}` is unvisited, so it starts component `{count}`." The final step (line 3, after the loop) narrates "Found `{count}` connected components."
 
 **Operation: Topological Sort (directed only)**
 
@@ -481,7 +569,7 @@ Runs the DFS step sequence per component, tagging `vertex.component` and using a
 5    return REVERSE(postorder stack)
 ```
 
-Each postorder push (line 4) is a step; the final step reveals the reversed order as the answer, narrated explicitly: *"Reverse postorder is a valid topological order."*
+Runs the DFS steps; each finish is a line-4 step: "Finished `{v}`. Pushing it onto the postorder stack." with `variables.postorder`. The final step (line 5) reveals the reversed order: *"Reverse postorder is a valid topological order: `{list}`."* If the DFS meets a back edge (a neighbor that is still on the call stack) it stops there: *"Edge `{v}` to `{w}` closes a cycle, so this digraph has no topological order."* Directed Randomize always produces a DAG; the directed seed graph contains a cycle so this case is reachable.
 
 **Operation: Strong Components, Kosaraju–Sharir (directed only)**
 
@@ -493,7 +581,7 @@ Each postorder push (line 4) is a step; the final step reveals the reversed orde
 5        DFS(v) in G, assigning the same component id to every reached vertex
 ```
 
-Two-phase animation: first show the reverse-postorder computation on the reversed graph (dimmed/secondary), then the main DFS pass on the original graph assigning component colors.
+Two-phase animation: first show the reverse-postorder computation on the reversed graph (dimmed/secondary), then the main DFS pass on the original graph assigning component colors. Phase 1 reuses the Topological Sort steps (all on line 2, with `variables.phase = "reversed graph"` so the canvas draws edges reversed and dimmed) and ends with "Reverse postorder of the reversed graph: `{list}`." Phase 2 narrates each start on line 5: "`{v}` starts strong component `{count}`." followed by DFS steps on the original graph, and ends with "Found `{count}` strong components."
 
 ## 11. Content Integration
 

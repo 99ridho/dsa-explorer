@@ -1,16 +1,24 @@
 import type { TopicModule } from '@/types/step-engine'
 import { HashTableCanvas } from './canvas'
 import { coreMaterial, realWorldUsage } from './content'
-import { hashTableOperations } from './operations'
+import { buildChaining, buildProbing, hashTableOperations } from './operations'
 import { hashTablePseudocode } from './pseudocode'
-import { HASH_TABLE_M, type HashTableSnapshot, type HashTableState } from './types'
+import type { HashStrategy, HashTableSnapshot, HashTableState } from './types'
 
-function emptyTable(variant?: string): HashTableState {
-  if (variant === 'probing') {
-    return { strategy: 'probing', slots: Array<number | null>(HASH_TABLE_M).fill(null), M: HASH_TABLE_M }
-  }
-  return { strategy: 'chaining', buckets: Array.from({ length: HASH_TABLE_M }, () => []), M: HASH_TABLE_M }
+const asStrategy = (v?: string): HashStrategy => (v === 'probing' ? 'probing' : 'chaining')
+
+/** Under M = 11 these give one four-key chain (12, 23, 34, 45 all hash to 1) and a cluster. */
+const SEED_KEYS = [12, 23, 34, 45, 5, 16]
+
+function randomKeys(): number[] {
+  const count = 6 + Math.floor(Math.random() * 3) // 6 to 8, leaves free slots when probing
+  const pool = new Set<number>()
+  while (pool.size < count) pool.add(1 + Math.floor(Math.random() * 99))
+  return [...pool]
 }
+
+const build = (keys: number[], strategy: HashStrategy): HashTableState =>
+  strategy === 'probing' ? buildProbing(keys) : buildChaining(keys)
 
 export const hashTable: TopicModule<HashTableState, HashTableSnapshot> = {
   slug: 'hash-table',
@@ -29,6 +37,6 @@ export const hashTable: TopicModule<HashTableState, HashTableSnapshot> = {
     ],
     default: 'chaining',
   },
-  createInitialState: () => emptyTable('chaining'),
-  randomize: (_state, variant) => emptyTable(variant),
+  createInitialState: (variant) => build(SEED_KEYS, asStrategy(variant)),
+  randomize: (_state, variant) => build(randomKeys(), asStrategy(variant)),
 }

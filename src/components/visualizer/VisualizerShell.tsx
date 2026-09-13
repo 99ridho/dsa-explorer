@@ -13,15 +13,18 @@ const NO_STEPS: Step<unknown>[] = []
 // v1 contract: every topic defines TState = TSnapshot (SPEC.md §10), so an operation's
 // finalSnapshot becomes the next persistent state.
 export function VisualizerShell({ topic }: { topic: TopicModule }) {
-  const [state, setState] = useState<unknown>(() => topic.createInitialState())
-  const [steps, setSteps] = useState<Step<unknown>[]>(NO_STEPS)
-  const [currentOperationId, setCurrentOperationId] = useState<string | null>(topic.operations[0]?.id ?? null)
   const [variant, setVariant] = useState<string | undefined>(topic.variant?.default)
+  const [state, setState] = useState<unknown>(() => topic.createInitialState(topic.variant?.default))
+  const [steps, setSteps] = useState<Step<unknown>[]>(NO_STEPS)
+  const [currentOperationId, setCurrentOperationId] = useState<string | null>(null)
   const [inputText, setInputText] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
 
   const playback = usePlayback(steps)
-  const currentOperation = topic.operations.find((op) => op.id === currentOperationId) ?? null
+  // Operations can be scoped to a variant (SPEC §7 `variants`); the first visible one is the default.
+  const visibleOperations = topic.operations.filter((op) => !op.variants || (variant !== undefined && op.variants.includes(variant)))
+  const currentOperation =
+    visibleOperations.find((op) => op.id === currentOperationId) ?? visibleOperations[0] ?? null
   const displayedSnapshot = playback.currentStep?.snapshot ?? state
   const Canvas = topic.CanvasComponent
 
@@ -45,15 +48,17 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
     setInputError(null)
   }
   const handleReset = () => {
-    setState(topic.createInitialState())
+    setState(topic.createInitialState(variant))
     setSteps(NO_STEPS)
     setInputError(null)
   }
   // Switching the variant resets the structure (§10.3): the representations don't share live data.
   const handleVariantChange = (value: string) => {
     setVariant(value)
-    setState(topic.randomize(topic.createInitialState(), value))
+    setState(topic.createInitialState(value))
     setSteps(NO_STEPS)
+    setCurrentOperationId(null)
+    setInputError(null)
   }
 
   // Keyboard playback (§12): Space play/pause, ←/→ step: ignored while typing in a field.
@@ -95,8 +100,8 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
         </CardHeader>
         <CardContent>
           <OperationBar
-            operations={topic.operations}
-            currentOperationId={currentOperationId}
+            operations={visibleOperations}
+            currentOperationId={currentOperation?.id ?? null}
             onOperationChange={(id) => {
               setCurrentOperationId(id)
               setInputError(null)
@@ -123,7 +128,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
         </CardHeader>
         <CardContent>
           <CodePanel
-            lines={currentOperationId ? (topic.pseudocode[currentOperationId] ?? []) : []}
+            lines={currentOperation ? (topic.pseudocode[currentOperation.id] ?? []) : []}
             currentStep={playback.currentStep}
             operationLabel={currentOperation?.label ?? null}
           />

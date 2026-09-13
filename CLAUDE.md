@@ -42,7 +42,10 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Snapshots are immutable values.** Each step's `snapshot` is a fresh deep copy with layout recomputed and highlights applied; the `finalSnapshot` carries no highlights. Never share node objects between steps.
 - **Randomize and Reset bypass the step engine**: they set `state` directly and clear `steps` to `[]`. Changing a variant does the same.
 - **v1 contract: `TState = TSnapshot`** for every topic (SPEC §10 defines them identically). `VisualizerShell` sets `state = result.finalSnapshot` after every operation. If a future topic needs a state that differs from its snapshot, that's a shell change, not a per-topic hack.
-- **Canvases are `viewBox`-scaled SVG** with no fixed pixel width/height (§12). Compute the viewBox from node extents.
+- **Canvases are `viewBox`-scaled SVG** with no fixed pixel width/height (§12). Compute the viewBox from node extents. The hash-table canvases are HTML flex/grid rather than SVG because they are tables of boxes, not diagrams; they still must not overflow at 400px.
+- **Operations declare `variants`** when they only apply to one variant value (SPEC §7). `createInitialState(variant)` must honor the variant so Reset stays in the mode the student picked.
+- **Graph positions live in the snapshot.** `buildGraph` runs `layoutGraph` (d3-force) once per vertex/edge set; algorithm steps copy positions and never re-run the simulation. Vertices are integers `0..V-1`, at most 10; undirected edges are stored once with `from < to`.
+- **Heap pseudocode has no blank lines.** The SINK block is appended to the remove, build-heap, and heapsort listings so sub-steps highlight real lines; `highlightLine` values in `operations.ts` are per listing (see the `SinkLines` offsets).
 - **BST node ids are `k${key}`** (`nodeId()` in `src/topics/bst/types.ts`), because keys are unique, so the id is stable across snapshots and Framer Motion can animate a node between positions.
 - **Hash table `M` is fixed at 11** (`HASH_TABLE_M`); Framer Motion (`motion/react`) is the animation layer. Both were §17 open items, decided 2026-09-13.
 
@@ -63,12 +66,12 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 
 | Topic | Status |
 |---|---|
-| `bst` | Complete: insert / search / delete (Hibbard) / inorder, animated canvas, tests. |
-| `binary-heap` | Stub: content, pseudocode, variant (`max`/`min`) wired; `operations = []`, placeholder canvas. |
-| `hash-table` | Stub: content, pseudocode, variant (`chaining`/`probing`); `operations = []`, placeholder canvas. |
-| `graph` | Stub: content, pseudocode, variant (`undirected`/`directed`); `operations = []`, placeholder canvas. |
+| `bst` | Complete: insert / search / delete (Hibbard) / inorder, animated SVG tree, 14 tests. |
+| `binary-heap` | Complete: insert / remove max or min / build heap / heapsort, tree + array dual view, 7 tests. Min mode flips every comparison and every narration word. |
+| `hash-table` | Complete: insert / search / delete for chaining and for linear probing (six ops, three visible per variant), two canvases, 9 tests. Probing delete rehashes the cluster. |
+| `graph` | Complete: add edge / BFS / DFS / connected components (undirected) / topological sort and Kosaraju-Sharir strong components (directed), force-layout SVG with arrowheads when directed, 10 tests. |
 
-Un-stubbing a topic = implementing `operations.ts` against its §10 step table, replacing the placeholder in `canvas.tsx`, writing `operations.test.ts`, and (for hash-table/graph) filtering `operations` by the active variant. The shell passes `variant` to the canvas but does not yet filter the operation list; add that in `VisualizerShell`/`OperationBar` when the first variant-dependent operation set lands.
+All four v1 topics are implemented; SPEC §15 roadmap rows (queue, stack, sorting, linked list, B-tree) are the next candidates and follow the §14 recipe. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 
 ## Conventions
 
@@ -85,6 +88,7 @@ Un-stubbing a topic = implementing `operations.ts` against its §10 step table, 
 - **Vite 8 / Tailwind v4 / TS 6** with npm (not pnpm), matching the sibling `statprob-explorer` project.
 - **Deployment**: GHCR image via `.github/workflows/deploy.yml`; Traefik labels and the Cloudflare Tunnel hostname live on the home server. The subdomain (`dsa.ridhopratama.net` proposed) is still an open item from §17.
 - **Two-column topic page** (2026-09-13): visualizer left + sticky, materials right in tabs, replacing the spec's original usage → visualizer → material stack; SPEC §6 was amended to match. `main` is capped at `max-w-screen-2xl` to give the split room.
+- **Remaining visualizers completed** (2026-09-13): heap, hash table, graph implemented against SPEC §10.2 to §10.4; the spec gained `variants`, `createInitialState(variant)`, hash and graph step tables, `PROBE_DELETE`, `Add edge`, integer vertices, and cycle handling for topological sort. `PlaceholderCanvas` removed.
 - **antislop mandated** (2026-09-13): SPEC §18 written, copy audited (`anti-slop/audit-001-2026-09-13.md`), `lint:copy` guard added to `lint` and CI, references scrubbed for punctuation only and `content.ts` regenerated.
 - **BST initial state** is a fixed seed tree (`50 30 70 20 40 60 80`) rather than empty, so the page is demo-ready on load. Reset returns to it.
 

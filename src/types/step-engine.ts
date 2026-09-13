@@ -23,6 +23,7 @@ export interface OperationDefinition<TState = unknown, TInput = unknown, TSnapsh
   id: string // e.g. "insert"
   label: string // e.g. "Insert"
   inputKind: 'key' | 'edge' | 'array' | 'none'
+  variants?: string[] // variant values this operation applies to; absent means all
   run: OperationFn<TState, TInput, TSnapshot>
 }
 
@@ -42,7 +43,7 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   CanvasComponent: React.ComponentType<{ snapshot: TSnapshot; variant?: string }>
   content: { realWorldUsage: string; coreMaterial: string }
   variant?: VariantConfig
-  createInitialState: () => TState
+  createInitialState: (variant?: string) => TState
   randomize: (state: TState, variant?: string) => TState // instant, no animation
 }
 

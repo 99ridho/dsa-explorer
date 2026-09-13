@@ -7,6 +7,8 @@ import {
   forceLink,
   forceManyBody,
   forceSimulation,
+  forceX,
+  forceY,
   type SimulationLinkDatum,
   type SimulationNodeDatum,
 } from 'd3-force'
@@ -26,7 +28,7 @@ interface LayoutNode extends SimulationNodeDatum {
 export function layoutGraph(
   vertexIds: string[],
   edges: { from: string; to: string }[],
-  { width = 600, height = 400, linkDistance = 90, charge = -300, ticks = 300 }: GraphLayoutOptions = {},
+  { width = 600, height = 400, linkDistance = 110, charge = -380, ticks = 300 }: GraphLayoutOptions = {},
 ): Record<string, { x: number; y: number }> {
   const nodes: LayoutNode[] = vertexIds.map((id) => ({ id }))
   const links: SimulationLinkDatum<LayoutNode>[] = edges.map((e) => ({ source: e.from, target: e.to }))
@@ -40,7 +42,10 @@ export function layoutGraph(
         .distance(linkDistance),
     )
     .force('center', forceCenter(width / 2, height / 2))
-    .force('collide', forceCollide(28))
+    // Gentle pull toward the middle so disconnected components stay near each other.
+    .force('x', forceX(width / 2).strength(0.04))
+    .force('y', forceY(height / 2).strength(0.04))
+    .force('collide', forceCollide(34))
     .stop()
 
   simulation.tick(ticks)
