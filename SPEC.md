@@ -103,7 +103,7 @@ Topic-slug routes are canonical. Week is metadata shown in the sidebar and on th
 | `/topic/hash-table` | `TopicPage` for Hash Table (Week 12) |
 | `/topic/graph` | `TopicPage` for Graph (Weeks 13–15) |
 
-`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders `{ content.realWorldUsage, VisualizerShell, content.coreMaterial }` in that order — per the confirmed page layout (CPMK is deliberately omitted; refer students to the RPS for that).
+`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop — `VisualizerShell` in the left column (sticky, so it stays in view while reading) and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. On narrow viewports the columns stack, visualizer first. CPMK is deliberately omitted; refer students to the RPS for that.
 
 ## 7. Core Domain Types
 

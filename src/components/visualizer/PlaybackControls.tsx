@@ -43,13 +43,11 @@ export function PlaybackControls({ playback, stepCount }: PlaybackControlsProps)
         >
           <SkipForwardIcon />
         </Button>
-        <span className="ml-1 font-mono text-sm tabular-nums text-muted-foreground" aria-live="polite">
+        <span className="ml-1 whitespace-nowrap font-mono text-sm tabular-nums text-muted-foreground" aria-live="polite">
           {disabled ? '— / —' : `${currentStepIndex + 1} / ${stepCount}`}
         </span>
-        <span className="ml-auto hidden text-xs text-muted-foreground sm:inline">
-          Space: play/pause · ←/→: step
-        </span>
       </div>
+      <p className="text-xs text-muted-foreground">Space: play/pause · ←/→: step</p>
 
       <div className="flex items-center gap-3">
         <span className="w-12 shrink-0 text-xs text-muted-foreground">Step</span>
