@@ -79,6 +79,8 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `queue` | Complete: enqueue / dequeue on a resizing array (wrap-around, doubling, halving narrated) or a linked list (variant `impl`), 12 tests. |
 | `stack` | Complete: push / pop on a resizing array or a linked list, plus Evaluate expression (Dijkstra's two-stack algorithm, `inputKind: 'text'`), 11 tests. |
 | `linked-list` | Complete: insert first / insert last / remove first / traverse, 8 tests. |
+| `sorting` | Complete: load / selection sort / insertion sort / shellsort with compare and exchange counts as badges, 7 tests. |
+| `searching` | Complete: get / put on an unordered list (sequential search) or an ordered array (binary search with rank), FrequencyCounter values, 9 tests. |
 
 SPEC §10.5 to §10.12 (2026-09-13) specify the remaining eight topics: `complexity`, `arrays`, `queue`, `stack`, `sorting`, `linked-list`, `searching`, `b-tree`. Their `content.ts` files are generated and committed; the other module files land phase by phase (stack, queue, linked list; sorting, searching; B-tree; complexity, arrays). Registry order is week order, so add each module at its week position. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 

@@ -3,7 +3,9 @@
 import type { TopicModule } from '@/types/step-engine'
 import { queue } from './queue'
 import { stack } from './stack'
+import { sorting } from './sorting'
 import { linkedList } from './linked-list'
+import { searching } from './searching'
 import { bst } from './bst'
 import { binaryHeap } from './binary-heap'
 import { hashTable } from './hash-table'
@@ -14,7 +16,9 @@ import { graph } from './graph'
 export const topics: TopicModule[] = [
   queue as unknown as TopicModule,
   stack as unknown as TopicModule,
+  sorting as unknown as TopicModule,
   linkedList as unknown as TopicModule,
+  searching as unknown as TopicModule,
   bst as unknown as TopicModule,
   binaryHeap as unknown as TopicModule,
   hashTable as unknown as TopicModule,

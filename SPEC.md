@@ -1091,7 +1091,7 @@ Seed: `4, 8, 15, 16`. Randomize: 3 to 6 unique values in 1 to 99.
 
 ### 10.11 Searching, `/topic/searching`
 
-**Variant:** `impl: "sequential" | "binary"` (default `"sequential"`), labeled Sequential search, unordered list and Binary search, ordered array. Switching the variant resets the structure.
+**Variant:** `impl: "sequential" | "binary"` (default `"sequential"`), labeled Sequential search and Binary search (the tab strip has to fit a 400px viewport). Switching the variant resets the structure.
 
 **State & snapshot**
 
