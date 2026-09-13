@@ -38,6 +38,7 @@ An in-browser, single-page app that lets students interactively build and operat
 | Components | shadcn/ui (Sidebar, Button, Slider, Tabs, Select, Input, Badge, Card) |
 | Animation | Framer Motion (`motion/react`) for snapshot-to-snapshot transitions. **[OPEN]**: confirm acceptable, else fall back to CSS transitions |
 | Graph layout | `d3-force` only (not full d3) |
+| Tests | Vitest for the Section 10 step tables (`src/**/*.test.ts`); Playwright (Chromium) for the topic page layout in Section 12 (`e2e/`) |
 | Language | TypeScript throughout |
 
 ## 4. Repository Structure
@@ -80,9 +81,12 @@ dsa-explorer/
 │   │   └── TopicPage.tsx             # generic page, driven by TopicModule
 │   └── types/
 │       └── step-engine.ts            # Step<T>, OperationResult<T>, TopicModule
+├── e2e/
+│   └── topic-page-layout.spec.ts     # Playwright: the Section 12 layout contract at lg, md, and phone widths
 ├── public/
 ├── index.html
 ├── vite.config.ts
+├── playwright.config.ts
 ├── package.json
 ├── Dockerfile
 └── .github/workflows/deploy.yml
@@ -112,7 +116,7 @@ Topic-slug routes are canonical. Week is metadata shown in the sidebar and on th
 | `/topic/hash-table` | `TopicPage` for Hash Table (Week 12) |
 | `/topic/graph` | `TopicPage` for Graph (Weeks 13–15) |
 
-`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column (sticky, so it stays in view while reading) and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. On narrow viewports the columns stack, visualizer first. CPMK is deliberately omitted; refer students to the RPS for that.
+`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. At `lg` and up the page is locked to the viewport: the document never scrolls, and only two regions do, the Code listing inside the visualizer and the active materials panel. The title, canvas, Operation, Playback, and both tab strips stay where they are while a student reads or steps. If the viewport is too short for the canvas plus Operation plus Playback, the visualizer column scrolls as a fallback. Below `lg` the columns stack, visualizer first, and the document scrolls normally. CPMK is deliberately omitted; refer students to the RPS for that.
 
 ## 7. Core Domain Types
 
@@ -182,9 +186,9 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 ## 8. Shared UI Components
 
 - **`AppSidebar`**: lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
-- **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`.
+- **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`. From `md` up it is a two-column grid: the canvas spans both columns, Operation and Playback stack in the left column at their own content height (never stretched to match Code), and Code fills the right column beside them. At `md` a short Code card stretches down to the bottom of Playback; at `lg` the Code card sizes to its listing and is capped at the column height, so its listing scrolls only past that point.
 - **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind` (`text` is a free-form field, used by Stack's Evaluate expression; an operation's `placeholder` overrides the per-kind default), a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
-- **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width.
+- **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width. At `lg` the listing is the only part of the panel that scrolls (the description and the tab strip stay put); it is keyboard focusable with a visible ring, and stepping keeps the highlighted line inside it by scrolling the listing itself, never the page.
 - **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
 
 ## 9. Step Engine: Playback Semantics
@@ -1287,6 +1291,10 @@ The reference files live in `references/` and `content.ts` is generated from the
 - All playback controls must be keyboard-operable (space to play/pause, arrow keys to step) and carry `aria-label`s, because students may navigate this without a mouse.
 - On narrow viewports, `VisualizerShell` stacks vertically: Canvas → OperationBar → CodePanel → PlaybackControls, rather than the desktop side-by-side layout.
 - Canvas SVGs should use `viewBox` scaling, not fixed pixel dimensions, so they scale down on mobile without clipping.
+- Layout contract by width, checked by `e2e/topic-page-layout.spec.ts` (`npm run test:e2e`):
+  - `lg` and up: the document does not scroll; the Code listing and the active materials panel do. Scrolling either leaves every other element in place. The Code card sizes to a short listing instead of filling the column. Stepping through an operation keeps the highlighted line inside the listing and never moves the page. The listing is reachable with Tab, shows a focus ring, and scrolls with the arrow keys.
+  - `md` to `lg`: Operation and Playback keep their content height beside a tall Code card (Playback starts one grid gap below Operation); a short Code card ends level with the bottom of Playback.
+  - Phone: cards stack in DOM order, the document scrolls, nothing overflows sideways at 400px, and stepping does not move the page.
 
 ## 13. Deployment
 
@@ -1340,7 +1348,7 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 - [ ] Hash Table's chaining/probing toggle and Graph's directed/undirected toggle each correctly swap canvas component and operation list.
 - [ ] Every Section 10.5 to 10.12 topic is registered in week order and passes its `operations.test.ts`; the `text` input rejects an empty expression with a visible error.
 - [ ] Real-world usage and core material content renders on each topic page, sourced from the four existing markdown files.
-- [ ] Responsive layout verified at a mobile viewport width.
+- [ ] Responsive layout verified at a mobile viewport width, and the Section 12 layout contract passes `npm run test:e2e` at desktop, tablet, and phone widths.
 - [ ] Builds to a static `dist/`, runs correctly in the production Docker image.
 
 ## 17. Open Items to Confirm Before/During Build

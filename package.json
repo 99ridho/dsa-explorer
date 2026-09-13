@@ -9,6 +9,7 @@
     "lint": "eslint . && npm run lint:copy",
     "lint:copy": "node scripts/check-copy.mjs",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/vite": "^4.3.0",
     "@types/d3-force": "^3.0.10",
     "@types/node": "^24.12.3",
