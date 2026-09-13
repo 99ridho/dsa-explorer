@@ -15,7 +15,13 @@ export interface BTreeNode {
   external: boolean
 }
 
-export type BTreeLayoutNode = BTreeNode & { x: number; y: number; highlight?: BTreeHighlight; entryIndex?: number }
+export type BTreeLayoutNode = BTreeNode & {
+  x: number
+  y: number
+  highlight?: BTreeHighlight
+  entryIndex?: number
+  splitFrom?: string // set on a new node until its parent links it, so the layout can draw it beside its origin
+}
 
 export interface BTreeSnapshot {
   M: number

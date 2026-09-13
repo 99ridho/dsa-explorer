@@ -6,6 +6,7 @@ import { BTREE_M, MAX_KEYS, nodeId, type BTreeHighlight, type BTreeSnapshot, typ
 
 export const ENTRY_W = 30
 export const ENTRY_H = 26
+const DETACHED_GAP = 24
 
 // ---------- snapshot helpers ----------
 
@@ -33,7 +34,19 @@ export function withLayout(s: BTreeSnapshot): BTreeSnapshot {
   const nodes: BTreeSnapshot['nodes'] = {}
   for (const [id, node] of Object.entries(s.nodes)) {
     const pos = positions[id]
-    nodes[id] = { ...node, x: pos?.x ?? 0, y: pos?.y ?? 0 }
+    if (pos) {
+      const { splitFrom: _linked, ...rest } = node
+      nodes[id] = { ...rest, x: pos.x, y: pos.y }
+      continue
+    }
+    // Not reachable yet: a node that just split off sits to the right of its origin until the parent links it.
+    const origin = node.splitFrom ? positions[node.splitFrom] : undefined
+    const originWidth = node.splitFrom ? nodeWidth(s.nodes[node.splitFrom].entries.length) : 0
+    nodes[id] = {
+      ...node,
+      x: origin ? origin.x + originWidth / 2 + DETACHED_GAP + nodeWidth(node.entries.length) / 2 : 0,
+      y: origin ? origin.y : 0,
+    }
   }
   return { ...s, nodes }
 }
@@ -131,7 +144,7 @@ function split(rec: StepRecorder, s: BTreeSnapshot, id: string): string {
   const kept = h.entries.slice(0, half)
   const tId = nodeId(s.nextId)
   s.nextId += 1
-  s.nodes[tId] = { id: tId, entries: moved, external: h.external, x: 0, y: 0 }
+  s.nodes[tId] = { id: tId, entries: moved, external: h.external, x: 0, y: 0, splitFrom: id }
   h.entries = kept
   const keys = [...kept, ...moved].map((e) => e.key)
   rec.push(

@@ -1,6 +1,8 @@
 // Single source of truth for navigation and routes: SPEC.md §7.
 // Adding a topic = adding one entry here (§14).
 import type { TopicModule } from '@/types/step-engine'
+import { complexity } from './complexity'
+import { arrays } from './arrays'
 import { queue } from './queue'
 import { stack } from './stack'
 import { sorting } from './sorting'
@@ -15,6 +17,8 @@ import { graph } from './graph'
 // Cast: each module is strongly typed internally; the registry erases those params.
 // Registry order is week order: it drives the sidebar and the home page.
 export const topics: TopicModule[] = [
+  complexity as unknown as TopicModule,
+  arrays as unknown as TopicModule,
   queue as unknown as TopicModule,
   stack as unknown as TopicModule,
   sorting as unknown as TopicModule,

@@ -13,6 +13,10 @@ const LANGS: SnippetLanguage[] = ['cpp', 'java', 'python']
  * second push that resizes, a B-tree root split) are covered by each topic's own test file.
  */
 const INPUTS: Record<string, unknown[]> = {
+  'complexity/count-accesses': [16, 12, 0, 5000],
+  'arrays/create': [[1, 2, 3], Array.from({ length: 17 }, () => 0)],
+  'arrays/access': [2, 9],
+  'arrays/set': [[2, 7], [2]],
   'queue/array-enqueue': [7],
   'queue/linked-enqueue': [7],
   'stack/array-push': [7],

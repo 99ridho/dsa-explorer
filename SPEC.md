@@ -711,10 +711,10 @@ Operation ids are `create` (Create from list, `inputKind: "array"`), `access` (A
 | access / set, bad index | 2 | "Index `{i}` is outside 0 to `{N-1}`, so the program stops with an out-of-bounds error." | all `error`, stop |
 | access / set, good index | 2 | "Index `{i}` is inside 0 to `{N-1}`, so the access is safe." | `[i]` `read` |
 | access | 3 | "a[`{i}`] holds `{v}`." | `[i]` `read` |
-| set, wrong count | 1 | "Set needs two numbers, an index and a value, and `{k}` were entered, so nothing changes." | none |
+| set, wrong count | 1 | "Set needs two numbers, an index and a value, and `{k}` were entered, so nothing changes." (`was` for 1) | none |
 | set | 3 | "Writing `{v}` into a[`{i}`], replacing `{old}`." | `[i]` `write` |
 | resize | 2 | "Creating a new array of length `{2N}`: every slot starts at 0." | `resizing` row appears |
-| resize, over the cap | 2 | "The array already has `{N}` slots, the most this demo shows, so nothing changes." | none |
+| resize, over the cap | 2 | "Doubling would need `{2N}` slots and this demo shows at most 16, so nothing changes." | none |
 | resize, per element | 3 | "Copying a[`{i}`] = `{v}` into the new array." | `[i]` `copy` on both rows |
 | resize | 4 | "The new array replaces the old one, so a has `{2N}` slots and the old array can be reclaimed." | `resizing` cleared |
 | memory | 2 | "An int array carries a 24-byte header: 16 bytes of object overhead, 4 bytes for the length, and 4 bytes of padding." | none |
@@ -1203,7 +1203,7 @@ type BTreeState = BTreeSnapshot;
 
 **Semantics:** `BTree.java` from the reference implementation, with two intentional deviations. Internal entries hold a key and a child link, the key being the smallest key of that child's subtree; external entries hold a key and its value. Descend into child `j` when `j + 1 == h.m` or `key < h.entry[j+1].key`. After an insertion, a node holding `M` entries splits: entries 0 and 1 stay, entries 2 and 3 move to a new node, and the parent receives a guide entry `(u.entry[0].key, u)` right after the child it descended into. A root split creates a two-entry root and increments `height`. Deviation 1: when a new minimum descends into child `j` with `key < h.entry[j].key` (only possible for `j = 0`), the guide key is rewritten to `key` (line 10). The reference implementation leaves it stale, which after a root split draws a node such as `20 | 20`, and a student reads that as a bug; keeping every guide key equal to its subtree's smallest key keeps the picture honest, and the Java snippet carries the same one extra line. Deviation 2: `put` of a key that is already present stops with a single step instead of storing a duplicate, because the reference text calls this a symbol table. Values are not visualized (the input is a key); the Java snippet keeps `val`. The tree holds at most 30 keys.
 
-**Canvas layout:** an SVG. Each node is a horizontal run of `entries.length` key boxes (30 × 26), laid out by `layoutMultiwayTree` (`lib/layout/tree-layout.ts`): a post-order pass computes each subtree's width, children pack left to right, a parent centers over its children, `y = depth × vertical spacing`. Each internal entry draws a line from its bottom center to its child's top center. External nodes are filled; internal nodes are outlined. The viewBox is computed from the extents, as in 10.1.
+**Canvas layout:** an SVG. Each node is a horizontal run of `entries.length` key boxes (30 × 26), laid out by `layoutMultiwayTree` (`lib/layout/tree-layout.ts`): a post-order pass computes each subtree's width, children pack left to right, a parent centers over its children, `y = depth × vertical spacing`. Each internal entry draws a line from its bottom center to its child's top center. External nodes are filled; internal nodes are outlined. A node that has just split off and is not yet linked by its parent is drawn beside its origin (`splitFrom`), so the split step never leaves a node floating over the root. The viewBox is computed from the extents, as in 10.1.
 
 **Operation: Get**
 
@@ -1314,15 +1314,15 @@ The explorer's v1 scope (Section 2) was limited to four topics; the 2026-09-13 e
 
 | Topic | RPS Week(s) | Slide deck status | Explorer spec status |
 |---|---|---|---|
-| Analysis of Algorithms | 1 | Drafted (`Week-1-Complexity.md`) | **Specified, Section 10.5** |
-| Arrays & Data Representation | 2 | Drafted (`Week-2-ArraysDataRepresentation.md`) | **Specified, Section 10.6** |
-| Queue | 3 | Drafted (`Week-3-Queue.md`) | **Specified, Section 10.7** |
-| Stack | 4 | Drafted (`Week-4-Stack.md`) | **Specified, Section 10.8** |
-| Sorting | 5 | Drafted (`Week-5-Sorting.md`) | **Specified, Section 10.9** |
-| Linked List | 6 | Drafted (`Week-6-LinkedList.md`) | **Specified, Section 10.10** |
-| Searching | 7 | Drafted (`Week-7-Searching.md`) | **Specified, Section 10.11** |
+| Analysis of Algorithms | 1 | Drafted (`Week-1-Complexity.md`) | **Specified, Section 10.5; implemented** |
+| Arrays & Data Representation | 2 | Drafted (`Week-2-ArraysDataRepresentation.md`) | **Specified, Section 10.6; implemented** |
+| Queue | 3 | Drafted (`Week-3-Queue.md`) | **Specified, Section 10.7; implemented** |
+| Stack | 4 | Drafted (`Week-4-Stack.md`) | **Specified, Section 10.8; implemented** |
+| Sorting | 5 | Drafted (`Week-5-Sorting.md`) | **Specified, Section 10.9; implemented** |
+| Linked List | 6 | Drafted (`Week-6-LinkedList.md`) | **Specified, Section 10.10; implemented** |
+| Searching | 7 | Drafted (`Week-7-Searching.md`) | **Specified, Section 10.11; implemented** |
 | Binary Search Tree | 9 | Drafted | **Specified, Section 10.1; implemented** |
-| B-Tree | 10 | Drafted (`Week-10-BTree.md`) | **Specified, Section 10.12** |
+| B-Tree | 10 | Drafted (`Week-10-BTree.md`) | **Specified, Section 10.12; implemented** |
 | Binary Heap | 11 | Drafted | **Specified, Section 10.2; implemented** |
 | Hash Table | 12 | Drafted | **Specified, Section 10.3; implemented** |
 | Graph | 13–15 | Drafted | **Specified, Section 10.4; implemented** |
