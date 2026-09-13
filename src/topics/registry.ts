@@ -1,4 +1,4 @@
-// Single source of truth for navigation and routes — SPEC.md §7.
+// Single source of truth for navigation and routes: SPEC.md §7.
 // Adding a topic = adding one entry here (§14).
 import type { TopicModule } from '@/types/step-engine'
 import { bst } from './bst'

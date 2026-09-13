@@ -1,4 +1,4 @@
-// Core domain types — SPEC.md §7, verbatim.
+// Core domain types: SPEC.md §7, verbatim.
 import type React from 'react'
 
 export interface Step<TSnapshot> {

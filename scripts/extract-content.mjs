@@ -27,7 +27,7 @@ for (const [slug, file] of topics) {
   const real = section(md, /^## 2\. Real-World Usage/, /^## 3\. /)
   const core = section(md, /^## 3\. Core Material/, /^## 4\. /)
   mkdirSync(`src/topics/${slug}`, { recursive: true })
-  const out = `// SPEC.md §11 — copied verbatim from references/${file} (§2 and §3).
+  const out = `// SPEC.md §11: copied verbatim from references/${file} (§2 and §3).
 // Do not rewrite or summarize: this text has been through the course's citation-integrity process.
 // Regenerate with \`node scripts/extract-content.mjs\` if the reference markdown changes.
 

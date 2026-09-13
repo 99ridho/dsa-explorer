@@ -1,7 +1,7 @@
 # Algoritma dan Struktur Data
 ## Week 11: Binary Heap
 
-**Program:** Information Systems and Technology — Universitas Negeri Jakarta
+**Program:** Information Systems and Technology, Universitas Negeri Jakarta
 **Lecturer:** Muhammad Ridho Kurniawan Pratama
 
 ---
@@ -10,7 +10,7 @@
 
 **CPMK:** Students can understand, design, and implement algorithms and data structures that support the efficiency of smart technology systems.
 
-**Sub-CPMK-1.8:** Students can recognize and understand variations on basic data structures — for example B-Tree, Hash Table, and Binary Heap.
+**Sub-CPMK-1.8:** Students can recognize and understand variations on basic data structures, for example B-Tree, Hash Table, and Binary Heap.
 
 > **Scope note.** Cross-referencing the RPS's ordered topic list (Tree → B-Tree → Binary Heap → Hash Table, Weeks 9–12) against its per-week table, Binary Heap belongs to Week 11 specifically; Week 10 is B-Tree (see its own document).
 
@@ -20,7 +20,7 @@
 
 A binary heap answers one specific question fast: "what's the most urgent item right now, and give it to me, then let me add more items later." The source text itself supplies several concrete cases that turn on exactly this need (algs4.cs.princeton.edu/24pq):
 
-- **Interrupt handling.** A real-time system handling interrupts from a mouse click or a wireless connection needs to attend to them immediately. If interrupts should be handled in arrival order, a FIFO queue suffices — but "if different interrupts have different priorities... then we need a priority queue."
+- **Interrupt handling.** A real-time system handling interrupts from a mouse click or a wireless connection needs to attend to them immediately. If interrupts should be handled in arrival order, a FIFO queue suffices, but "if different interrupts have different priorities... then we need a priority queue."
 - **Stock exchange matching engines.** A continuous limit order book ranks buy and sell orders by price and then by time. The source describes using "two priority queues for each stock, one for buyers and one for sellers" to match compatible orders.
 - **Simulation of queueing networks.** Simulating complex queueing systems (e.g., parallel M/M/1 queues) requires a priority queue to determine which event to process next, since the events themselves don't arrive in the order they should be processed.
 
@@ -38,7 +38,7 @@ Many applications need to process items in order of key, without needing full so
 
 ### 3.2 Why Elementary Implementations Fall Short
 
-Every elementary implementation — array or linked list, ordered or unordered — shares one weakness: either *insert* or *remove the maximum* takes linear time in the worst case (algs4.cs.princeton.edu/24pq). An unordered array makes insert fast but remove-the-maximum requires a full scan; an ordered array reverses the trade-off. Finding a structure where both operations are guaranteed fast is the central problem this section solves.
+Every elementary implementation (array or linked list, ordered or unordered) shares one weakness: either *insert* or *remove the maximum* takes linear time in the worst case (algs4.cs.princeton.edu/24pq). An unordered array makes insert fast but remove-the-maximum requires a full scan; an ordered array reverses the trade-off. Finding a structure where both operations are guaranteed fast is the central problem this section solves.
 
 ### 3.3 Heap Definition
 
@@ -57,23 +57,23 @@ These two operations implement *insert* (add at the end, then swim) and *remove 
 
 ### 3.5 Performance
 
-For a priority queue of n items, the heap algorithms require no more than 1 + lg n compares for insert, and no more than 2 lg n compares for remove-the-maximum (algs4.cs.princeton.edu/24pq) — a logarithmic guarantee that elementary implementations cannot offer for both operations at once.
+For a priority queue of n items, the heap algorithms require no more than 1 + lg n compares for insert, and no more than 2 lg n compares for remove-the-maximum (algs4.cs.princeton.edu/24pq), a logarithmic guarantee that elementary implementations cannot offer for both operations at once.
 
 ### 3.6 Application: Heapsort
 
 Any priority queue can drive a sorting method: insert every key, then repeatedly remove the extreme one. Using a heap for this produces *heapsort*, in two phases (algs4.cs.princeton.edu/24pq):
 
-- **Heap construction** — turning the raw array into a heap, achievable in linear time by sinking from right to left.
-- **Sortdown** — repeatedly removing the largest remaining item and placing it into the slot the shrinking heap vacates.
+- **Heap construction**: turning the raw array into a heap, achievable in linear time by sinking from right to left.
+- **Sortdown**: repeatedly removing the largest remaining item and placing it into the slot the shrinking heap vacates.
 
 Sink-based heap construction is linear time, and heapsort overall uses fewer than 2n lg n compares and exchanges to sort n items (algs4.cs.princeton.edu/24pq).
 
 ### 3.7 Practical Variant: Index Priority Queue
 
-Applications that need to reference an item already sitting in the priority queue — to update its priority, for instance — associate a unique integer index with each item, giving an *index priority queue* (algs4.cs.princeton.edu/24pq).
+Applications that need to reference an item already sitting in the priority queue (to update its priority, for instance) associate a unique integer index with each item, giving an *index priority queue* (algs4.cs.princeton.edu/24pq).
 
 ---
 
 ## 4. Conclusion
 
-A binary heap solves what elementary array and linked-list implementations cannot: guaranteeing that both insert and remove-the-maximum run in logarithmic time. It does this with a compact array representation of a complete binary tree and two symmetric repair operations, swim and sink. That combination is what makes it the default choice anywhere a system must track a constantly changing set of pending work and act on the most urgent item first — from interrupt handling to order-matching engines to heapsort itself.
+A binary heap solves what elementary array and linked-list implementations cannot: guaranteeing that both insert and remove-the-maximum run in logarithmic time. It does this with a compact array representation of a complete binary tree and two symmetric repair operations, swim and sink. That combination is what makes it the default choice anywhere a system must track a constantly changing set of pending work and act on the most urgent item first, from interrupt handling to order-matching engines to heapsort itself.

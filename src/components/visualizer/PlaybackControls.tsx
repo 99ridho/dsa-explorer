@@ -1,4 +1,4 @@
-// SPEC.md §8/§9/§12 — play/pause, step, scrub, speed; all keyboard-operable with aria-labels.
+// SPEC.md §8/§9/§12: play/pause, step, scrub, speed; all keyboard-operable with aria-labels.
 import { PauseIcon, PlayIcon, SkipBackIcon, SkipForwardIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
@@ -44,7 +44,7 @@ export function PlaybackControls({ playback, stepCount }: PlaybackControlsProps)
           <SkipForwardIcon />
         </Button>
         <span className="ml-1 whitespace-nowrap font-mono text-sm tabular-nums text-muted-foreground" aria-live="polite">
-          {disabled ? '— / —' : `${currentStepIndex + 1} / ${stepCount}`}
+          {disabled ? '0 / 0' : `${currentStepIndex + 1} / ${stepCount}`}
         </span>
       </div>
       <p className="text-xs text-muted-foreground">Space: play/pause · ←/→: step</p>

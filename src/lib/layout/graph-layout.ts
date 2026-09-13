@@ -1,4 +1,4 @@
-// d3-force wrapper — SPEC.md §10.4 "Canvas layout".
+// d3-force wrapper: SPEC.md §10.4 "Canvas layout".
 // Runs the simulation to completion synchronously and returns positions; the caller
 // caches the result and only recomputes when the vertex/edge set changes.
 import {

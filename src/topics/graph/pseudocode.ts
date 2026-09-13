@@ -1,4 +1,4 @@
-// SPEC.md §10.4 — pseudocode, verbatim.
+// SPEC.md §10.4: pseudocode, verbatim.
 
 export const graphPseudocode: Record<string, string[]> = {
   bfs: [

@@ -1,4 +1,4 @@
-// SPEC.md §6 — client-only routing. Topic slugs are canonical; week is metadata.
+// SPEC.md §6: client-only routing. Topic slugs are canonical; week is metadata.
 import { createBrowserRouter, Navigate } from 'react-router'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { HomePage } from '@/pages/HomePage'

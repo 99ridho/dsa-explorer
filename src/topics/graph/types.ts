@@ -1,4 +1,4 @@
-// SPEC.md §10.4 — state & snapshot shapes.
+// SPEC.md §10.4: state & snapshot shapes.
 
 export interface GraphVertex {
   id: string

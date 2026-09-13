@@ -1,11 +1,11 @@
-// SPEC.md §11 — copied verbatim from references/Week-11-BinaryHeap.md (§2 and §3).
+// SPEC.md §11: copied verbatim from references/Week-11-BinaryHeap.md (§2 and §3).
 // Do not rewrite or summarize: this text has been through the course's citation-integrity process.
 // Regenerate with `node scripts/extract-content.mjs` if the reference markdown changes.
 
 export const realWorldUsage = `
 A binary heap answers one specific question fast: "what's the most urgent item right now, and give it to me, then let me add more items later." The source text itself supplies several concrete cases that turn on exactly this need (algs4.cs.princeton.edu/24pq):
 
-- **Interrupt handling.** A real-time system handling interrupts from a mouse click or a wireless connection needs to attend to them immediately. If interrupts should be handled in arrival order, a FIFO queue suffices — but "if different interrupts have different priorities... then we need a priority queue."
+- **Interrupt handling.** A real-time system handling interrupts from a mouse click or a wireless connection needs to attend to them immediately. If interrupts should be handled in arrival order, a FIFO queue suffices, but "if different interrupts have different priorities... then we need a priority queue."
 - **Stock exchange matching engines.** A continuous limit order book ranks buy and sell orders by price and then by time. The source describes using "two priority queues for each stock, one for buyers and one for sellers" to match compatible orders.
 - **Simulation of queueing networks.** Simulating complex queueing systems (e.g., parallel M/M/1 queues) requires a priority queue to determine which event to process next, since the events themselves don't arrive in the order they should be processed.
 
@@ -21,7 +21,7 @@ Many applications need to process items in order of key, without needing full so
 
 ### 3.2 Why Elementary Implementations Fall Short
 
-Every elementary implementation — array or linked list, ordered or unordered — shares one weakness: either *insert* or *remove the maximum* takes linear time in the worst case (algs4.cs.princeton.edu/24pq). An unordered array makes insert fast but remove-the-maximum requires a full scan; an ordered array reverses the trade-off. Finding a structure where both operations are guaranteed fast is the central problem this section solves.
+Every elementary implementation (array or linked list, ordered or unordered) shares one weakness: either *insert* or *remove the maximum* takes linear time in the worst case (algs4.cs.princeton.edu/24pq). An unordered array makes insert fast but remove-the-maximum requires a full scan; an ordered array reverses the trade-off. Finding a structure where both operations are guaranteed fast is the central problem this section solves.
 
 ### 3.3 Heap Definition
 
@@ -40,18 +40,18 @@ These two operations implement *insert* (add at the end, then swim) and *remove 
 
 ### 3.5 Performance
 
-For a priority queue of n items, the heap algorithms require no more than 1 + lg n compares for insert, and no more than 2 lg n compares for remove-the-maximum (algs4.cs.princeton.edu/24pq) — a logarithmic guarantee that elementary implementations cannot offer for both operations at once.
+For a priority queue of n items, the heap algorithms require no more than 1 + lg n compares for insert, and no more than 2 lg n compares for remove-the-maximum (algs4.cs.princeton.edu/24pq), a logarithmic guarantee that elementary implementations cannot offer for both operations at once.
 
 ### 3.6 Application: Heapsort
 
 Any priority queue can drive a sorting method: insert every key, then repeatedly remove the extreme one. Using a heap for this produces *heapsort*, in two phases (algs4.cs.princeton.edu/24pq):
 
-- **Heap construction** — turning the raw array into a heap, achievable in linear time by sinking from right to left.
-- **Sortdown** — repeatedly removing the largest remaining item and placing it into the slot the shrinking heap vacates.
+- **Heap construction**: turning the raw array into a heap, achievable in linear time by sinking from right to left.
+- **Sortdown**: repeatedly removing the largest remaining item and placing it into the slot the shrinking heap vacates.
 
 Sink-based heap construction is linear time, and heapsort overall uses fewer than 2n lg n compares and exchanges to sort n items (algs4.cs.princeton.edu/24pq).
 
 ### 3.7 Practical Variant: Index Priority Queue
 
-Applications that need to reference an item already sitting in the priority queue — to update its priority, for instance — associate a unique integer index with each item, giving an *index priority queue* (algs4.cs.princeton.edu/24pq).
+Applications that need to reference an item already sitting in the priority queue (to update its priority, for instance) associate a unique integer index with each item, giving an *index priority queue* (algs4.cs.princeton.edu/24pq).
 `.trim()

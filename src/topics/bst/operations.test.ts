@@ -40,8 +40,8 @@ describe('insert', () => {
   it('descends with lines 4/6 and inserts at line 3 with a "new" highlight', () => {
     const { steps, finalSnapshot } = runInsert(tree(), 45)
     expect(lines(steps)).toEqual([4, 6, 6, 3])
-    expect(steps[0].description).toBe('45 < 50 → go left')
-    expect(steps[1].description).toBe('45 > 30 → go right')
+    expect(steps[0].description).toBe('45 < 50, so go left.')
+    expect(steps[1].description).toBe('45 > 30, so go right.')
     expect(highlighted(steps[0].snapshot, 'current')).toEqual([50])
     expect(highlighted(steps.at(-1)!.snapshot, 'new')).toEqual([45])
     expect(inorderKeys(finalSnapshot)).toEqual([20, 30, 40, 45, 50, 60, 70, 80])
@@ -86,7 +86,7 @@ describe('delete (Hibbard)', () => {
   it('splices out a leaf via line 6', () => {
     const { steps, finalSnapshot } = runDelete(tree(), 20)
     expect(lines(steps)).toEqual([3, 3, 5, 6])
-    expect(steps[2].description).toBe('Found 20 — this node has 0 children.')
+    expect(steps[2].description).toBe('Found 20. This node has 0 children.')
     expect(highlighted(steps[2].snapshot, 'delete-target')).toEqual([20])
     expect(inorderKeys(finalSnapshot)).toEqual([30, 40, 50, 60, 70, 80])
     expect(finalSnapshot.nodes.k30.left).toBeNull()

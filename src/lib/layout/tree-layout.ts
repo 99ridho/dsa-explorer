@@ -1,4 +1,4 @@
-// Classic binary-tree layout — SPEC.md §10.1 "Canvas layout".
+// Classic binary-tree layout: SPEC.md §10.1 "Canvas layout".
 // x = in-order index × hGap, y = depth × vGap. Shared by BST and Binary Heap:
 // the caller supplies a child accessor, so heap indices (2k, 2k+1) work as well as node ids.
 

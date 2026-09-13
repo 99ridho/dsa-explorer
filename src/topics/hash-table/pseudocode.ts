@@ -1,4 +1,4 @@
-// SPEC.md §10.3 — pseudocode, verbatim. HASH(key) = key mod M.
+// SPEC.md §10.3: pseudocode, verbatim. HASH(key) = key mod M.
 
 export const hashTablePseudocode: Record<string, string[]> = {
   'chain-insert': ['CHAIN_INSERT(key):', '  i = HASH(key)', '  if key not in bucket[i]: append key to bucket[i]'],

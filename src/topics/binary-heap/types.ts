@@ -1,4 +1,4 @@
-// SPEC.md §10.2 — state & snapshot shapes.
+// SPEC.md §10.2: state & snapshot shapes.
 
 export type HeapMode = 'max' | 'min'
 

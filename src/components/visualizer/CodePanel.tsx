@@ -1,4 +1,4 @@
-// SPEC.md §8 — numbered pseudocode with the current step's line highlighted.
+// SPEC.md §8: numbered pseudocode with the current step's line highlighted.
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import type { Step } from '@/types/step-engine'

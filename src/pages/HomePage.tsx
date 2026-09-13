@@ -1,5 +1,4 @@
 import { Link } from 'react-router'
-import { ArrowRightIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { topicsByWeek } from '@/topics/registry'
@@ -17,7 +16,7 @@ export function HomePage() {
 
       {topicsByWeek().map((group) => (
         <section key={group.weekLabel} className="space-y-3">
-          <h2 className="text-sm font-medium uppercase tracking-wide text-muted-foreground">{group.weekLabel}</h2>
+          <h2 className="text-sm font-medium text-muted-foreground">{group.weekLabel}</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {group.topics.map((topic) => (
               <Link key={topic.slug} to={`/topic/${topic.slug}`} className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
@@ -29,11 +28,10 @@ export function HomePage() {
                         {topic.weekLabel}
                       </Badge>
                     </div>
-                    <CardDescription className="flex items-center gap-1">
+                    <CardDescription>
                       {topic.operations.length > 0
                         ? `${topic.operations.length} operations`
-                        : 'Visualization planned'}
-                      <ArrowRightIcon className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                        : 'Visualization not built yet'}
                     </CardDescription>
                   </CardHeader>
                 </Card>

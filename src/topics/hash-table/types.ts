@@ -1,4 +1,4 @@
-// SPEC.md §10.3 — state & snapshot shapes. M is fixed at 11 (decision, §17).
+// SPEC.md §10.3: state & snapshot shapes. M is fixed at 11 (decision, §17).
 
 export const HASH_TABLE_M = 11
 

@@ -1,4 +1,4 @@
-// SPEC.md §8/§9 — owns the persistent TState and the playback for the last operation's steps.
+// SPEC.md §8/§9: owns the persistent TState and the playback for the last operation's steps.
 import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePlayback } from '@/lib/step-engine'
@@ -56,7 +56,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
     setSteps(NO_STEPS)
   }
 
-  // Keyboard playback (§12): Space play/pause, ←/→ step — ignored while typing in a field.
+  // Keyboard playback (§12): Space play/pause, ←/→ step: ignored while typing in a field.
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement | null
@@ -80,7 +80,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
   }, [steps.length, playback])
 
   return (
-    // Mobile order: Canvas → OperationBar → CodePanel → PlaybackControls (§12) — the DOM order.
+    // Mobile order: Canvas → OperationBar → CodePanel → PlaybackControls (§12): the DOM order.
     // From md up: canvas spans the full width; Operation + Playback stack beside a tall Pseudocode.
     <div className="grid grid-cols-[minmax(0,1fr)] gap-4 md:grid-cols-2">
       <Card className="min-w-0 md:col-span-2">

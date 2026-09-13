@@ -1,4 +1,4 @@
-// SPEC.md §10.1 canvas — SVG tree, viewBox-scaled (§12), nodes animated between snapshots.
+// SPEC.md §10.1 canvas: SVG tree, viewBox-scaled (§12), nodes animated between snapshots.
 import { AnimatePresence, motion } from 'motion/react'
 import type { BSTHighlight, BSTSnapshot } from './types'
 
@@ -25,7 +25,7 @@ export function TreeCanvas({ snapshot }: { snapshot: BSTSnapshot }) {
   if (nodes.length === 0) {
     return (
       <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
-        Tree is empty — insert a key or press Randomize.
+        The tree is empty. Insert a key or press Randomize.
       </div>
     )
   }

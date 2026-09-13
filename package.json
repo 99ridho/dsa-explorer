@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . && npm run lint:copy",
+    "lint:copy": "node scripts/check-copy.mjs",
     "test": "vitest run",
     "preview": "vite preview"
   },

@@ -1,4 +1,4 @@
-// Playback over a precomputed step array — SPEC.md §9.
+// Playback over a precomputed step array: SPEC.md §9.
 import { useCallback, useEffect, useState } from 'react'
 import type { Step } from '@/types/step-engine'
 

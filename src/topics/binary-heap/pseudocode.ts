@@ -1,4 +1,4 @@
-// SPEC.md §10.2 — pseudocode, verbatim (max-heap form; min-heap flips every comparison).
+// SPEC.md §10.2: pseudocode, verbatim (max-heap form; min-heap flips every comparison).
 
 export const heapPseudocode: Record<string, string[]> = {
   insert: [

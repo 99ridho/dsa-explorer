@@ -1,4 +1,4 @@
-// SPEC.md §10.1 — pseudocode, verbatim. Line numbers are the contract for `highlightLine`.
+// SPEC.md §10.1: pseudocode, verbatim. Line numbers are the contract for `highlightLine`.
 
 export const bstPseudocode: Record<string, string[]> = {
   insert: [

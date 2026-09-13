@@ -1,9 +1,9 @@
-# DSA Interactive Explorer — Technical Specification (v1)
+# DSA Interactive Explorer: Technical Specification (v1)
 
-**Course:** Algoritma dan Struktur Data (1519630013) — Universitas Negeri Jakarta
+**Course:** Algoritma dan Struktur Data (1519630013), Universitas Negeri Jakarta
 **Author:** Muhammad Ridho Kurniawan Pratama
 **Scope of v1:** Binary Search Tree, Binary Heap, Hash Table, Graph
-**Reference:** Sedgewick, R. & Wayne, K. — *Algorithms, 4th Edition* (https://algs4.cs.princeton.edu)
+**Reference:** Sedgewick, R. & Wayne, K., *Algorithms, 4th Edition* (https://algs4.cs.princeton.edu)
 **Style reference:** visualgo.net, contextualized to this course's RPS
 
 ### How to use this document
@@ -14,29 +14,29 @@ This spec is written for two readers at once. A human reader can read top to bot
 
 ## 1. Overview
 
-An in-browser, single-page app that lets students interactively build and operate on the four data structures covered in Weeks 9–15 of the course, watching each operation animate step by step — a VisualGO-style tool, scoped to exactly what this RPS teaches, with the visualization paired against the real-world usage and core material content already written for the course.
+An in-browser, single-page app that lets students interactively build and operate on the four data structures covered in Weeks 9–15 of the course, watching each operation animate step by step: a VisualGO-style tool, scoped to exactly what this RPS teaches, with the visualization paired against the real-world usage and core material content already written for the course.
 
 ## 2. Goals and Non-Goals
 
 **Goals**
 - Step-by-step animated visualization of BST, Binary Heap, Hash Table, and Graph operations, with synced pseudocode highlighting.
 - Custom and randomized input for every structure.
-- A architecture that lets future topics (queue, stack, sorting, linked list, B-tree — the rest of the RPS) be added as self-contained modules without touching existing code.
+- A architecture that lets future topics (queue, stack, sorting, linked list, B-tree, the rest of the RPS) be added as self-contained modules without touching existing code.
 
 **Non-Goals (v1)**
 - No backend, no persistence, no user accounts. Everything is client-side, in-memory, reset on page reload.
-- No quiz/scoring/practice-mode features — this is a visualization tool, not an assessment tool.
-- No BST rank/select/floor/ceiling, no heap index-priority-queue — deferred past v1 (see Section 14).
+- No quiz/scoring/practice-mode features. This is a visualization tool, not an assessment tool.
+- No BST rank/select/floor/ceiling, no heap index-priority-queue. Both are deferred past v1 (see Section 14).
 
 ## 3. Tech Stack
 
 | Layer | Choice |
 |---|---|
-| Framework | React 18 + React Router v7 (SPA/client-only mode — no SSR, no loaders that hit a server) |
+| Framework | React 18 + React Router v7 (SPA/client-only mode: no SSR, no loaders that hit a server) |
 | Build tool | Vite |
 | Styling | Tailwind CSS v4 (CSS-first config, theme provided in Section 5) |
 | Components | shadcn/ui (Sidebar, Button, Slider, Tabs, Select, Input, Badge, Card) |
-| Animation | Framer Motion (`motion/react`) for snapshot-to-snapshot transitions — **[OPEN]**: confirm acceptable, else fall back to CSS transitions |
+| Animation | Framer Motion (`motion/react`) for snapshot-to-snapshot transitions. **[OPEN]**: confirm acceptable, else fall back to CSS transitions |
 | Graph layout | `d3-force` only (not full d3) |
 | Language | TypeScript throughout |
 
@@ -59,7 +59,7 @@ dsa-explorer/
 │   │   │   └── CodePanel.tsx         # pseudocode with highlighted line
 │   │   └── ui/                       # shadcn generated components
 │   ├── topics/
-│   │   ├── registry.ts               # TopicModule[] — single source of truth for nav + routes
+│   │   ├── registry.ts               # TopicModule[], single source of truth for nav + routes
 │   │   ├── bst/
 │   │   │   ├── index.ts              # exports the TopicModule
 │   │   │   ├── operations.ts         # insert, search, delete, traverse
@@ -70,7 +70,7 @@ dsa-explorer/
 │   │   ├── hash-table/   (same shape)
 │   │   └── graph/        (same shape)
 │   ├── lib/
-│   │   ├── step-engine.ts            # usePlayback() hook — see Section 9
+│   │   ├── step-engine.ts            # usePlayback() hook, see Section 9
 │   │   └── layout/
 │   │       ├── tree-layout.ts        # shared by bst + binary-heap
 │   │       └── graph-layout.ts       # wraps d3-force
@@ -89,7 +89,7 @@ dsa-explorer/
 
 ## 5. Theming
 
-Drop the provided `index.css` in verbatim (it's already Tailwind v4 CSS-first syntax with `@theme inline`). Load `DM Sans` and `Space Mono` from Google Fonts (or self-host) in `index.html` — the CSS references them as `--font-sans` / `--font-mono` but does not load them itself. Respect the existing `.dark` class toggle for dark mode; shadcn components should be installed with the "new-york" style to match the given `--radius: 1rem`.
+Drop the provided `index.css` in verbatim (it's already Tailwind v4 CSS-first syntax with `@theme inline`). Load `DM Sans` and `Space Mono` from Google Fonts (or self-host) in `index.html`; the CSS references them as `--font-sans` / `--font-mono` but does not load them itself. Respect the existing `.dark` class toggle for dark mode; shadcn components should be installed with the "new-york" style to match the given `--radius: 1rem`.
 
 ## 6. Routing
 
@@ -97,13 +97,13 @@ Topic-slug routes are canonical. Week is metadata shown in the sidebar and on th
 
 | Path | Renders |
 |---|---|
-| `/` | `HomePage` — topic index grouped by week range |
+| `/` | `HomePage`, topic index grouped by week range |
 | `/topic/bst` | `TopicPage` for Binary Search Tree (Week 9) |
 | `/topic/binary-heap` | `TopicPage` for Binary Heap (Weeks 10–11) |
 | `/topic/hash-table` | `TopicPage` for Hash Table (Week 12) |
 | `/topic/graph` | `TopicPage` for Graph (Weeks 13–15) |
 
-`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop — `VisualizerShell` in the left column (sticky, so it stays in view while reading) and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. On narrow viewports the columns stack, visualizer first. CPMK is deliberately omitted; refer students to the RPS for that.
+`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column (sticky, so it stays in view while reading) and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. On narrow viewports the columns stack, visualizer first. CPMK is deliberately omitted; refer students to the RPS for that.
 
 ## 7. Core Domain Types
 
@@ -156,17 +156,17 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 }
 ```
 
-`registry.ts` exports `const topics: TopicModule[]`, which drives both `AppSidebar` and `TopicPage`'s lookup. **Adding a new topic later means adding one entry here — no other file changes.**
+`registry.ts` exports `const topics: TopicModule[]`, which drives both `AppSidebar` and `TopicPage`'s lookup. **Adding a new topic later means adding one entry here, with no other file changes.**
 
 ## 8. Shared UI Components
 
-- **`AppSidebar`** — lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
-- **`VisualizerShell`** — the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`.
-- **`OperationBar`** — operation `Select` (from `operations`), an `Input` sized to `inputKind`, a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and — when `variant` is defined — a `Tabs` or `Select` bound to it.
-- **`CodePanel`** — renders `pseudocode[currentOperationId]` as a numbered `<pre>` block; the line matching `currentStep.highlightLine` gets a highlighted background. Show `currentStep.description` above or below the block.
-- **`PlaybackControls`** — play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
+- **`AppSidebar`**: lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
+- **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`.
+- **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind`, a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
+- **`CodePanel`**: renders `pseudocode[currentOperationId]` as a numbered `<pre>` block; the line matching `currentStep.highlightLine` gets a highlighted background. Show `currentStep.description` above or below the block.
+- **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
 
-## 9. Step Engine — Playback Semantics
+## 9. Step Engine: Playback Semantics
 
 ```ts
 // lib/step-engine.ts
@@ -187,15 +187,15 @@ function usePlayback<T>(steps: Step<T>[]) {
 ```
 
 Rules:
-- `steps` is always precomputed in full before playback starts (an operation's `run()` returns the entire array up front) — this is what makes scrubbing and step-backward trivial: there's no partial-execution state to reconstruct, just an index into an array of already-known snapshots.
+- `steps` is always precomputed in full before playback starts (an operation's `run()` returns the entire array up front). This is what makes scrubbing and step-backward trivial: there's no partial-execution state to reconstruct, just an index into an array of already-known snapshots.
 - Triggering a new operation replaces `steps` and calls `reset()`.
-- "Randomize" and "Reset" (in `OperationBar`) bypass the step engine entirely — they mutate `TState` directly and clear `steps` to `[]`, since they aren't meant to be scrubbed.
+- "Randomize" and "Reset" (in `OperationBar`) bypass the step engine entirely: they mutate `TState` directly and clear `steps` to `[]`, since they aren't meant to be scrubbed.
 
 ## 10. Per-Topic Specifications
 
-Each subsection gives: the snapshot shape, the canvas layout rule, and pseudocode + a step table per operation. The step table is the contract for `run()` — implement `run()` so it emits exactly these steps, in this order, for these trigger conditions.
+Each subsection gives: the snapshot shape, the canvas layout rule, and pseudocode + a step table per operation. The step table is the contract for `run()`: implement `run()` so it emits exactly these steps, in this order, for these trigger conditions.
 
-### 10.1 Binary Search Tree — `/topic/bst`
+### 10.1 Binary Search Tree, `/topic/bst`
 
 **State & snapshot**
 
@@ -208,7 +208,7 @@ interface BSTSnapshot {
 type BSTState = BSTSnapshot; // the tree persists as-is between operations
 ```
 
-**Canvas layout:** classic tree layout — depth-first in-order traversal assigns each node an increasing `x` index × horizontal spacing constant; `y = depth × vertical spacing`. Recompute on every snapshot (cheap for the tree sizes a course demo needs, ~≤ 30 nodes).
+**Canvas layout:** classic tree layout: depth-first in-order traversal assigns each node an increasing `x` index × horizontal spacing constant; `y = depth × vertical spacing`. Recompute on every snapshot (cheap for the tree sizes a course demo needs, ~≤ 30 nodes).
 
 **Operation: Insert**
 
@@ -225,10 +225,10 @@ type BSTState = BSTSnapshot; // the tree persists as-is between operations
 
 | Trigger | Line | Description template | Snapshot delta |
 |---|---|---|---|
-| Descend, key < current | 4 | "`{key}` < `{node.key}` → go left" | current node `highlight: "current"` |
-| Descend, key > current | 6 | "`{key}` > `{node.key}` → go right" | current node `highlight: "current"` |
-| Reach a null link | 2–3 | "Empty spot found — inserting `{key}` here." | new node added, `highlight: "new"` |
-| Key already present | 4/6 fails both | "`{key}` already exists — a BST does not store duplicate keys." | matching node `highlight: "found"`, stop |
+| Descend, key < current | 4 | "`{key}` < `{node.key}`, so go left." | current node `highlight: "current"` |
+| Descend, key > current | 6 | "`{key}` > `{node.key}`, so go right." | current node `highlight: "current"` |
+| Reach a null link | 2–3 | "Empty spot found. Inserting `{key}` here." | new node added, `highlight: "new"` |
+| Key already present | 4/6 fails both | "`{key}` already exists. A BST does not store duplicate keys." | matching node `highlight: "found"`, stop |
 
 **Operation: Search**
 
@@ -240,7 +240,7 @@ type BSTState = BSTSnapshot; // the tree persists as-is between operations
 5    else: return SEARCH(root.right, key)
 ```
 
-Step table follows the same descend pattern as Insert (lines 4–5), ending in either a `"found"`-highlighted hit at line 3 or a `"miss"` narration at line 2.
+Step table follows the same descend pattern as Insert (lines 4–5), ending in either a `"found"`-highlighted hit at line 3 (*"`{key}` matches this node: HIT."*) or a miss narration at line 2 (*"Reached an empty link: MISS. `{key}` is not in the tree."*).
 
 **Operation: Delete (Hibbard deletion)**
 
@@ -262,8 +262,8 @@ Step table follows the same descend pattern as Insert (lines 4–5), ending in e
 | Trigger | Line | Description |
 |---|---|---|
 | Descend | 3/4 | same pattern as Insert/Search |
-| Node found, target `highlight: "delete-target"` | 5 | "Found `{key}` — this node has {0/1/2} children." |
-| 0 or 1 child | 6/7 | "Node has at most one child — splice it out directly." |
+| Node found, target `highlight: "delete-target"` | 5 | "Found `{key}`. This node has {0/1/2} children." |
+| 0 or 1 child | 6/7 | "The node has at most one child, so splice it out directly." |
 | 2 children | 8–11 | "Two children: replacing `{key}` with its in-order successor `{successor.key}`." |
 
 **Operation: Inorder Traversal**
@@ -276,9 +276,9 @@ Step table follows the same descend pattern as Insert (lines 4–5), ending in e
 5    INORDER(node.right)
 ```
 
-Each `VISIT` (line 4) emits a step highlighting that node and appending its key to a running "visited order" list shown in the description.
+Each `VISIT` (line 4) emits a step highlighting that node and appending its key to a running visited-order list shown in the description: *"Visit `{key}`. Visited so far: `{list}`."* An empty tree emits a single line-2 step: *"The tree is empty, so there is nothing to visit."*
 
-### 10.2 Binary Heap — `/topic/binary-heap`
+### 10.2 Binary Heap, `/topic/binary-heap`
 
 **Variant:** `mode: "max" | "min"` (default `"max"`). All comparisons below are written for max-heap; a min-heap flips every `<`/`>`.
 
@@ -294,7 +294,7 @@ interface HeapSnapshot {
 type HeapState = HeapSnapshot;
 ```
 
-**Canvas layout:** render both the tree view (position `k`'s children at `2k`, `2k+1`, same tree-layout utility as BST) **and** the underlying array as a row of indexed boxes beneath it — this dual view is what makes the array-as-tree representation legible to students.
+**Canvas layout:** render both the tree view (position `k`'s children at `2k`, `2k+1`, same tree-layout utility as BST) **and** the underlying array as a row of indexed boxes beneath it. This dual view is what makes the array-as-tree representation legible to students.
 
 **Operation: Insert**
 
@@ -314,7 +314,7 @@ type HeapState = HeapSnapshot;
 |---|---|---|
 | Append | 2–3 | "Placing `{value}` at the end of the heap (index `{n}`)." |
 | Compare with parent | 6 | "Comparing `{array[k]}` with parent `{array[k/2]}`." |
-| Swap needed | 7 | "`{array[k]}` > parent — swimming up." |
+| Swap needed | 7 | "`{array[k]}` is larger than its parent, so it swims up." |
 | Stop | 6 fails | "Heap order restored." |
 
 **Operation: Remove-max (or Remove-min)**
@@ -340,7 +340,7 @@ type HeapState = HeapSnapshot;
 |---|---|---|
 | Take root | 2–4 | "Removing `{extreme}` from the root; moving last element `{array[n+1]}` to the top." |
 | Pick larger child | 9–10 | "Comparing children at `{j}` and `{j+1}`." |
-| Swap | 11–12 | "`{array[k]}` < child `{array[j]}` — sinking down." |
+| Swap | 11–12 | "`{array[k]}` is smaller than its child `{array[j]}`, so it sinks down." |
 | Stop | 11 | "Heap order restored." |
 
 **Operation: Build-heap (from a custom/random array)**
@@ -367,9 +367,9 @@ Each iteration of line 3–4 emits the full SINK step sequence for that `k`, so 
 
 Reuses Build-heap and Sink step sequences; each pass through lines 4–6 marks index `n+1` as `highlight.kind: "sorted"` (rendered visually distinct, e.g. muted/greyed, and excluded from further sink comparisons).
 
-### 10.3 Hash Table — `/topic/hash-table`
+### 10.3 Hash Table, `/topic/hash-table`
 
-**Variant:** `strategy: "chaining" | "probing"` (default `"chaining"`). Table size `M` is fixed at a small prime (e.g. 11) for legible visualization — **[OPEN]**: confirm M should be fixed rather than student-configurable.
+**Variant:** `strategy: "chaining" | "probing"` (default `"chaining"`). Table size `M` is fixed at a small prime (e.g. 11) for legible visualization. **[OPEN]**: confirm M should be fixed rather than student-configurable.
 
 **State & snapshot**
 
@@ -380,11 +380,11 @@ type HashTableSnapshot = ChainingSnapshot | ProbingSnapshot;
 type HashTableState = HashTableSnapshot;
 ```
 
-**Canvas layout:** `strategy` selects between two entirely separate canvas components — `ChainingCanvas` (M horizontal rows, each a linked list of key boxes) and `ProbingCanvas` (a single row of M boxes, empty vs. occupied). Switching the variant resets the structure (the two representations aren't meant to hold the same live data simultaneously).
+**Canvas layout:** `strategy` selects between two entirely separate canvas components: `ChainingCanvas` (M horizontal rows, each a linked list of key boxes) and `ProbingCanvas` (a single row of M boxes, empty vs. occupied). Switching the variant resets the structure (the two representations aren't meant to hold the same live data simultaneously).
 
 **Hash function (shared):** `HASH(key) = key mod M`.
 
-**Operations — Chaining**
+**Operations: Chaining**
 
 ```
 1  CHAIN_INSERT(key):
@@ -400,9 +400,9 @@ type HashTableState = HashTableSnapshot;
 9    remove key from bucket[i] if present
 ```
 
-Every operation's first step highlights the computed index: *"`{key} mod {M} = {i}` → bucket `{i}`."* Then a second step narrates the linked-list scan/append/removal within that bucket.
+Every operation's first step highlights the computed index: *"`{key} mod {M} = {i}`, so use bucket `{i}`."* Then a second step narrates the linked-list scan/append/removal within that bucket.
 
-**Operations — Linear Probing**
+**Operations: Linear Probing**
 
 ```
 1  PROBE_INSERT(key):
@@ -419,9 +419,9 @@ Every operation's first step highlights the computed index: *"`{key} mod {M} = {
 11   return MISS
 ```
 
-Each probe (lines 3–4 / 8–10) is its own step: *"Slot `{i}` occupied by `{slot[i]}` — probing next."* Deletion for open addressing is the classic "remove then rehash the cluster" approach: after removing the key, walk forward from that slot re-inserting every key found until an empty slot is reached, so search correctness is preserved.
+Each probe (lines 3–4 / 8–10) is its own step: *"Slot `{i}` is occupied by `{slot[i]}`. Probe the next slot."* Deletion for open addressing is the classic "remove then rehash the cluster" approach: after removing the key, walk forward from that slot re-inserting every key found until an empty slot is reached, so search correctness is preserved.
 
-### 10.4 Graph — `/topic/graph`
+### 10.4 Graph, `/topic/graph`
 
 **Variant:** `directed: boolean` (default `false`). Directed mode adds Topological Sort and Strong Components to the operation list.
 
@@ -434,7 +434,7 @@ interface GraphSnapshot { vertices: GraphVertex[]; edges: GraphEdge[]; directed:
 type GraphState = GraphSnapshot;
 ```
 
-**Canvas layout:** positions come from `d3-force` (charge + link forces), computed once when the vertex/edge set changes and cached — not recomputed every animation frame. Directed edges render with an arrowhead marker; undirected without.
+**Canvas layout:** positions come from `d3-force` (charge + link forces), computed once when the vertex/edge set changes and cached, not recomputed every animation frame. Directed edges render with an arrowhead marker; undirected without.
 
 **Operation: BFS**
 
@@ -454,9 +454,9 @@ type GraphState = GraphSnapshot;
 | Start | 2 | "Starting BFS from `{source}`." vertex → `"frontier"` |
 | Dequeue | 4 | "Processing `{v}`." vertex → `"visiting"` |
 | Check neighbor | 5–6 | "Checking neighbor `{w}`." edge → `"active"` |
-| Mark & enqueue | 7–8 | "`{w}` is new — marking visited and enqueuing." vertex → `"frontier"`, edge → `"tree"` |
+| Mark & enqueue | 7–8 | "`{w}` is new. Mark it visited and enqueue it." vertex → `"frontier"`, edge → `"tree"` |
 
-**Operation: DFS** — same shape as BFS but recursive (stack via call frames instead of an explicit queue); step table mirrors BFS's with "recursing into `{w}`" language instead of "enqueuing."
+**Operation: DFS**: same shape as BFS but recursive (stack via call frames instead of an explicit queue); step table mirrors BFS's with "recursing into `{w}`" language instead of "enqueuing."
 
 **Operation: Connected Components (undirected only)**
 
@@ -483,7 +483,7 @@ Runs the DFS step sequence per component, tagging `vertex.component` and using a
 
 Each postorder push (line 4) is a step; the final step reveals the reversed order as the answer, narrated explicitly: *"Reverse postorder is a valid topological order."*
 
-**Operation: Strong Components — Kosaraju–Sharir (directed only)**
+**Operation: Strong Components, Kosaraju–Sharir (directed only)**
 
 ```
 1  KOSARAJU_SHARIR():
@@ -504,11 +504,13 @@ Two-phase animation: first show the reverse-postorder computation on the reverse
 - `Week-12-HashTable.md`
 - `Week-13-15-Graph.md`
 
-Copy those two sections in as-is (Markdown rendered via a lightweight renderer, or converted to JSX) — do not rewrite or re-summarize them; they've already been through this course's citation-integrity process, and rewriting risks introducing unverified claims.
+Copy those two sections in as-is (Markdown rendered via a lightweight renderer, or converted to JSX). Do not rewrite or re-summarize them; they've already been through this course's citation-integrity process, and rewriting risks introducing unverified claims.
+
+The reference files live in `references/` and `content.ts` is generated from them by `scripts/extract-content.mjs`, so the app never holds a hand-edited copy. The references themselves are held to the copy standard in Section 18, with one limit: only punctuation may change in them (an em dash becoming a comma, period, colon, or parentheses). Wording, claims, and citations never change, because that would undo the citation-integrity review.
 
 ## 12. Accessibility & Responsiveness
 
-- All playback controls must be keyboard-operable (space to play/pause, arrow keys to step) and carry `aria-label`s — students may navigate this without a mouse.
+- All playback controls must be keyboard-operable (space to play/pause, arrow keys to step) and carry `aria-label`s, because students may navigate this without a mouse.
 - On narrow viewports, `VisualizerShell` stacks vertically: Canvas → OperationBar → CodePanel → PlaybackControls, rather than the desktop side-by-side layout.
 - Canvas SVGs should use `viewBox` scaling, not fixed pixel dimensions, so they scale down on mobile without clipping.
 
@@ -517,12 +519,12 @@ Copy those two sections in as-is (Markdown rendered via a lightweight renderer, 
 Same pattern as the `dsa-online-judge` project:
 
 - **Repo:** new repository, e.g. `dsa-explorer`.
-- **Dockerfile:** multi-stage — `node` stage runs `vite build`, final stage serves `dist/` via a minimal static server (e.g. `nginx:alpine` or `caddy`).
+- **Dockerfile:** multi-stage: `node` stage runs `vite build`, final stage serves `dist/` via a minimal static server (e.g. `nginx:alpine` or `caddy`).
 - **CI/CD:** GitHub Actions workflow builds the image on push to `main` and pushes to GHCR (`ghcr.io/<user>/dsa-explorer`).
 - **Hosting:** the existing home-server Traefik instance picks up the new container via labels; the existing Cloudflare Tunnel config gets a new hostname mapping.
-- **Domain:** `dsa.ridhopratama.net` — **[OPEN]**: confirm this exact subdomain.
+- **Domain:** `dsa.ridhopratama.net`. **[OPEN]**: confirm this exact subdomain.
 
-## 14. Extensibility — Adding a Future Topic
+## 14. Extensibility: Adding a Future Topic
 
 To add a topic from the rest of the RPS (queue, stack, sorting, linked list, B-tree) later:
 
@@ -530,11 +532,11 @@ To add a topic from the rest of the RPS (queue, stack, sorting, linked list, B-t
 2. Define the topic's `TSnapshot` shape and canvas rendering rule.
 3. Write pseudocode + a step table per operation, in the same format as Section 10.
 4. Register the module in `topics/registry.ts`.
-5. No changes to `AppSidebar`, `TopicPage`, `VisualizerShell`, or the step engine are needed — they're all generic over `TopicModule`.
+5. No changes to `AppSidebar`, `TopicPage`, `VisualizerShell`, or the step engine are needed; they're all generic over `TopicModule`.
 
-## 15. Roadmap — Expansion to the Full RPS
+## 15. Roadmap: Expansion to the Full RPS
 
-The explorer's v1 scope (Section 2) is deliberately limited to four topics. The table below governs what's confirmed to come next, its status, and where its detailed spec will live once written. Per Section 14, each row becomes its own subsection under Section 10 (same format: snapshot shape, canvas rule, pseudocode + step table) when it's actually specified — this table is the tracker, not the spec itself.
+The explorer's v1 scope (Section 2) is deliberately limited to four topics. The table below governs what's confirmed to come next, its status, and where its detailed spec will live once written. Per Section 14, each row becomes its own subsection under Section 10 (same format: snapshot shape, canvas rule, pseudocode + step table) when it's actually specified. This table is the tracker, not the spec itself.
 
 | Topic | RPS Week(s) | Slide deck status | Explorer spec status |
 |---|---|---|---|
@@ -546,12 +548,12 @@ The explorer's v1 scope (Section 2) is deliberately limited to four topics. The 
 | Linked List | 6 | Not yet drafted | Not yet planned |
 | Searching (general) | 7 | Not yet drafted | Not yet planned |
 | B-Tree | 10 | Drafted (`Week-10-BTree.md`) | Not yet planned |
-| Binary Search Tree | 9 | Drafted | **Specified — Section 10.1** |
-| Binary Heap | 11 | Drafted | **Specified — Section 10.2** |
-| Hash Table | 12 | Drafted | **Specified — Section 10.3** |
-| Graph | 13–15 | Drafted | **Specified — Section 10.4** |
+| Binary Search Tree | 9 | Drafted | **Specified, Section 10.1** |
+| Binary Heap | 11 | Drafted | **Specified, Section 10.2** |
+| Hash Table | 12 | Drafted | **Specified, Section 10.3** |
+| Graph | 13–15 | Drafted | **Specified, Section 10.4** |
 
-Governance rule: a topic's row only moves to "Specified" once its full Section 10 subsection is written and reviewed — the roadmap doesn't authorize skipping straight to implementation off just a slide deck. Slide-deck drafting and explorer-spec drafting are tracked separately because they can proceed independently (a topic can have a deck without a spec, as most rows above currently do).
+Governance rule: a topic's row only moves to "Specified" once its full Section 10 subsection is written and reviewed; the roadmap doesn't authorize skipping straight to implementation off just a slide deck. Slide-deck drafting and explorer-spec drafting are tracked separately because they can proceed independently (a topic can have a deck without a spec, as most rows above currently do).
 
 ## 16. Acceptance Criteria
 
@@ -569,3 +571,25 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 - [ ] Framer Motion vs. CSS-only transitions (Section 3).
 - [ ] Fixed vs. student-configurable hash table size M (Section 10.3).
 - [ ] Final subdomain name (Section 13).
+
+## 18. Copy and Text Standard (antislop)
+
+This section is mandatory and not open for negotiation. Every piece of text this project produces is held to the antislop rule set: the core (`antislop:antislop`) and the copywriting skill (`antislop:antislop-copywriting`). Code comments are additionally held to `antislop:antislop-code`. A change that fails the antislop Delivery Gate is not merged, however small.
+
+**What it covers.** UI strings, step narration (`Step.description` and `variables`), placeholders, empty and error states, aria-labels, page titles, code comments, README, this specification, `CLAUDE.md`, the audit records in `anti-slop/`, and the course references in `references/` (punctuation only, see Section 11).
+
+**Hard rules, restated so they are searchable here:**
+
+- No em dash character (U+2014) anywhere (R-02). Use a period, comma, colon, or parentheses. Two hyphens with spaces around them, used as a dash, count too. The en dash (`–`) is allowed only inside a numeric range such as `Weeks 10–11` or `8–12`, never as an aside.
+- No generic CTAs (R-15). Buttons name the action they perform: Go, Randomize, Reset, Step forward.
+- No marketing vocabulary (R-16) and none of the empty AI vocabulary the copywriting skill lists (seamless, powerful, effortless, unlock, elevate, and so on). Say what the thing does.
+- No fabricated numbers, claims, or sources (R-17, R-36, R-38). A count the app computes is fine; a number nobody measured is not.
+- Student-facing text never points at internal documents. A student does not have `SPEC.md`; a placeholder tells them what is not built yet and what is.
+- No arrows (`→`) or dashes as prose connectors in narration. Use `so` for cause and effect and a colon for a result.
+- Every sentence names its actor where one exists (no actorless passive), and no rhythm tells: no forced rule of three, no negative parallelism, no staccato fragments.
+
+**Narration house style.** One plain sentence per step, present tense, naming the key or node it concerns, ending with a period. Two short sentences are fine when a step has a cause and an effect. The step tables in Section 10 are the canonical examples and are themselves held to this standard; a new topic's table is written this way before its `run()` is implemented.
+
+**Mechanical guard.** `npm run lint:copy` (`scripts/check-copy.mjs`) scans the source, docs, and references for the banned characters and fails the build, locally and in CI. It is the floor, not the standard: passing it does not replace running the antislop checklist.
+
+**Process.** antislop is applied in DURING mode: rules are applied while writing, not audited afterwards. The one-time audit of the pre-existing copy is recorded in `anti-slop/audit-001-2026-09-13.md`; later audits, if any, number upward in that folder.

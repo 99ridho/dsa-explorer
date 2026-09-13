@@ -10,7 +10,7 @@ See `SPEC.md` for the full specification and `CLAUDE.md` for the codebase guide.
 npm install
 npm run dev        # http://localhost:5173
 npm test           # vitest
-npm run build      # tsc -b && vite build → dist/
+npm run build      # tsc -b && vite build, outputs dist/
 ```
 
 ## Deploy
@@ -22,4 +22,4 @@ docker run -p 8080:80 dsa-explorer
 
 Pushes to `main` build and publish `ghcr.io/<owner>/dsa-explorer` via GitHub Actions.
 
-Reference: Sedgewick, R. & Wayne, K. — *Algorithms, 4th Edition*.
+Reference: Sedgewick, R. & Wayne, K., *Algorithms, 4th Edition*.

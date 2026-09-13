@@ -1,4 +1,4 @@
-// SPEC.md §10.1 — state & snapshot shapes.
+// SPEC.md §10.1: state & snapshot shapes.
 
 export type BSTHighlight = 'current' | 'new' | 'found' | 'delete-target'
 

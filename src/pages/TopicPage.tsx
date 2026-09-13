@@ -1,4 +1,4 @@
-// SPEC.md §6 — generic topic page: visualizer (left, sticky) beside the course materials (right, tabbed).
+// SPEC.md §6: generic topic page: visualizer (left, sticky) beside the course materials (right, tabbed).
 import { Navigate, useParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'

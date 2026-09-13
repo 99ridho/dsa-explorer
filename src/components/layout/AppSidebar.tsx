@@ -1,4 +1,4 @@
-// SPEC.md §8 — topic nav grouped by week range, driven entirely by the registry.
+// SPEC.md §8: topic nav grouped by week range, driven entirely by the registry.
 import { NavLink } from 'react-router'
 import {
   Sidebar,
@@ -19,7 +19,7 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-3">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-medium text-muted-foreground">
           Algoritma dan Struktur Data
         </p>
         <p className="text-sm text-muted-foreground">Universitas Negeri Jakarta</p>

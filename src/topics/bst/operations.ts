@@ -1,4 +1,4 @@
-// SPEC.md §10.1 — operations. Each `run()` emits exactly the steps in the spec's
+// SPEC.md §10.1: operations. Each `run()` emits exactly the steps in the spec's
 // step tables, in order, with the listed `highlightLine`.
 import type { OperationDefinition, OperationResult, Step } from '@/types/step-engine'
 import { layoutBinaryTree } from '@/lib/layout/tree-layout'
@@ -77,12 +77,12 @@ function descend(
       return { parentId, foundId: currentId, wentLeft }
     }
     if (key < node.key) {
-      rec.push(tree, lines.less, `${key} < ${node.key} → go left`, { [currentId]: 'current' })
+      rec.push(tree, lines.less, `${key} < ${node.key}, so go left.`, { [currentId]: 'current' })
       parentId = currentId
       currentId = node.left
       wentLeft = true
     } else {
-      rec.push(tree, lines.greater, `${key} > ${node.key} → go right`, { [currentId]: 'current' })
+      rec.push(tree, lines.greater, `${key} > ${node.key}, so go right.`, { [currentId]: 'current' })
       parentId = currentId
       currentId = node.right
       wentLeft = false
@@ -134,7 +134,7 @@ export function runInsert(state: BSTState, key: number): OperationResult<BSTSnap
   const { parentId, foundId, wentLeft } = descend(rec, tree, key, { less: 4, greater: 6 })
 
   if (foundId !== null) {
-    rec.push(tree, 4, `${key} already exists — a BST does not store duplicate keys.`, {
+    rec.push(tree, 4, `${key} already exists. A BST does not store duplicate keys.`, {
       [foundId]: 'found',
     })
     return { steps: rec.steps, finalSnapshot: withLayout(tree) }
@@ -147,7 +147,7 @@ export function runInsert(state: BSTState, key: number): OperationResult<BSTSnap
   } else {
     tree.nodes[parentId][wentLeft ? 'left' : 'right'] = id
   }
-  rec.push(tree, 3, `Empty spot found — inserting ${key} here.`, { [id]: 'new' })
+  rec.push(tree, 3, `Empty spot found. Inserting ${key} here.`, { [id]: 'new' })
 
   return { steps: rec.steps, finalSnapshot: withLayout(tree) }
 }
@@ -161,9 +161,9 @@ export function runSearch(state: BSTState, key: number): OperationResult<BSTSnap
   const { foundId } = descend(rec, tree, key, { less: 4, greater: 5 })
 
   if (foundId !== null) {
-    rec.push(tree, 3, `${key} == ${key} → HIT. Key found.`, { [foundId]: 'found' })
+    rec.push(tree, 3, `${key} matches this node: HIT.`, { [foundId]: 'found' })
   } else {
-    rec.push(tree, 2, `Reached an empty link → MISS. ${key} is not in the tree.`)
+    rec.push(tree, 2, `Reached an empty link: MISS. ${key} is not in the tree.`)
   }
   return { steps: rec.steps, finalSnapshot: withLayout(tree) }
 }
@@ -192,24 +192,24 @@ export function runDelete(state: BSTState, key: number): OperationResult<BSTSnap
   const { parentId, foundId, wentLeft } = descend(rec, tree, key, { less: 3, greater: 4 })
 
   if (foundId === null) {
-    rec.push(tree, 2, `Reached an empty link — ${key} is not in the tree, nothing to delete.`)
+    rec.push(tree, 2, `Reached an empty link. ${key} is not in the tree, so there is nothing to delete.`)
     return { steps: rec.steps, finalSnapshot: withLayout(tree) }
   }
 
   const target = tree.nodes[foundId]
   const childCount = (target.left ? 1 : 0) + (target.right ? 1 : 0)
-  rec.push(tree, 5, `Found ${key} — this node has ${childCount} children.`, { [foundId]: 'delete-target' })
+  rec.push(tree, 5, `Found ${key}. This node has ${childCount} children.`, { [foundId]: 'delete-target' })
 
   if (target.right === null) {
     relink(tree, parentId, wentLeft, target.left)
     delete tree.nodes[foundId]
-    rec.push(tree, 6, 'Node has at most one child — splice it out directly.')
+    rec.push(tree, 6, 'The node has at most one child, so splice it out directly.')
     return { steps: rec.steps, finalSnapshot: withLayout(tree) }
   }
   if (target.left === null) {
     relink(tree, parentId, wentLeft, target.right)
     delete tree.nodes[foundId]
-    rec.push(tree, 7, 'Node has at most one child — splice it out directly.')
+    rec.push(tree, 7, 'The node has at most one child, so splice it out directly.')
     return { steps: rec.steps, finalSnapshot: withLayout(tree) }
   }
 
@@ -256,14 +256,14 @@ export function runInorder(state: BSTState): OperationResult<BSTSnapshot> {
     const node = tree.nodes[id]
     walk(node.left)
     visited.push(node.key)
-    rec.push(tree, 4, `VISIT ${node.key} — visited so far: ${visited.join(', ')}`, { [id]: 'current' }, {
+    rec.push(tree, 4, `Visit ${node.key}. Visited so far: ${visited.join(', ')}.`, { [id]: 'current' }, {
       visited: visited.join(', '),
     })
     walk(node.right)
   }
 
   if (tree.rootId === null) {
-    rec.push(tree, 2, 'Tree is empty — nothing to visit.')
+    rec.push(tree, 2, 'The tree is empty, so there is nothing to visit.')
   } else {
     walk(tree.rootId)
   }

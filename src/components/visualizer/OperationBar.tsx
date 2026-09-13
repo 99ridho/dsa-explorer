@@ -1,4 +1,4 @@
-// SPEC.md §8 — operation select, sized input, Go / Randomize / Reset, optional variant tabs.
+// SPEC.md §8: operation select, sized input, Go / Randomize / Reset, optional variant tabs.
 import { useId } from 'react'
 import { DicesIcon, PlayIcon, RotateCcwIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -61,7 +61,7 @@ export function OperationBar({
 
       {operations.length === 0 ? (
         <p className="rounded-lg border border-dashed px-3 py-2 text-sm text-muted-foreground">
-          Operations for this topic are coming in a later pass.
+          Operations for this topic are not built yet.
         </p>
       ) : (
         <form
