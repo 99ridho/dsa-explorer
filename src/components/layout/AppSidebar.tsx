@@ -36,7 +36,7 @@ export function AppSidebar() {
                       {({ isActive }) => (
                         <SidebarMenuButton isActive={isActive} className="justify-between">
                           <span>{topic.title}</span>
-                          <Badge variant="outline" className="font-mono text-[10px]">
+                          <Badge className="font-mono text-[10px]">
                             {topic.weekLabel}
                           </Badge>
                         </SidebarMenuButton>
