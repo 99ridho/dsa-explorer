@@ -140,7 +140,8 @@ export type OperationFn<TState, TInput, TSnapshot> = (
 export interface OperationDefinition<TState = unknown, TInput = unknown, TSnapshot = unknown> {
   id: string;                       // e.g. "insert"
   label: string;                    // e.g. "Insert"
-  inputKind: "key" | "edge" | "array" | "none";
+  inputKind: "key" | "edge" | "array" | "none" | "text";
+  placeholder?: string;             // overrides the placeholder OperationBar shows for this inputKind
   variants?: string[];              // variant values this operation applies to; absent means all
   run: OperationFn<TState, TInput, TSnapshot>;
 }
@@ -182,7 +183,7 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 
 - **`AppSidebar`**: lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
 - **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`.
-- **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind`, a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
+- **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind` (`text` is a free-form field, used by Stack's Evaluate expression; an operation's `placeholder` overrides the per-kind default), a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
 - **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width.
 - **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
 
@@ -846,7 +847,7 @@ type StackSnapshot = ArrayStackSnapshot | LinkedStackSnapshot;
 type StackState = StackSnapshot;
 ```
 
-**Canvas layout:** as the queue, with a single `top` pointer label (index `n-1` in the array, `first` in the list). When `eval` is set the canvas shows the token strip with the cursor marked, above two columns labeled operands and operators. Capacity is capped at 32 slots.
+**Canvas layout:** as the queue, with a single pointer label: `top` at index `n-1` in the array, `first` in the list (the name the code uses). When `eval` is set the canvas shows the token strip with the cursor marked, above two columns labeled operands and operators. Capacity is capped at 32 slots.
 
 **Operations: Resizing array** (`ResizingArrayStack`)
 
@@ -934,6 +935,7 @@ Operation id `evaluate` (Evaluate expression, `inputKind: "text"`, placeholder `
 | Number | 8 | "Token `{v}` is a number, so push it onto the operand stack." | `operand` |
 | Result | 9 | "Every token is read, so the result is `{r}`." | `operand` |
 | Leftover values | 9 | "More than one value remains, so the expression is not fully parenthesized." | none |
+| No value | 9 | "No value remains, so the expression has no result." | none |
 
 Seeds: the array variant has capacity 4 holding `5, 9, 2` (top is 2), so the first push fills the array, the second doubles it, and two pops reach one-quarter and halve it. The linked variant holds the same values with 2 on top. Randomize: capacity 4 or 8 with 1 to capacity values; linked, 2 to 6 values.
 
@@ -1026,7 +1028,7 @@ interface LinkedListSnapshot {
   nodes: Record<string, LinkedNode>;
   firstId: string | null; lastId: string | null;
   nextId: number;
-  highlight?: { ids: string[]; kind: "new" | "current" | "visited" };
+  highlight?: Record<string, "new" | "current" | "visited">; // per node, so traverse can mark the current node and the visited prefix
 }
 type LinkedListState = LinkedListSnapshot;
 ```
@@ -1334,6 +1336,7 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 - [ ] Play/pause/step-forward/step-backward/speed/scrub all function correctly against a precomputed step array.
 - [ ] Randomize and Reset work without going through the step engine (instant, not animated).
 - [ ] Hash Table's chaining/probing toggle and Graph's directed/undirected toggle each correctly swap canvas component and operation list.
+- [ ] Every Section 10.5 to 10.12 topic is registered in week order and passes its `operations.test.ts`; the `text` input rejects an empty expression with a visible error.
 - [ ] Real-world usage and core material content renders on each topic page, sourced from the four existing markdown files.
 - [ ] Responsive layout verified at a mobile viewport width.
 - [ ] Builds to a static `dist/`, runs correctly in the production Docker image.
@@ -1360,7 +1363,7 @@ This section is mandatory and not open for negotiation. Every piece of text this
 - No arrows (`→`) or dashes as prose connectors in narration. Use `so` for cause and effect and a colon for a result.
 - Every sentence names its actor where one exists (no actorless passive), and no rhythm tells: no forced rule of three, no negative parallelism, no staccato fragments.
 
-**Narration house style.** One plain sentence per step, present tense, naming the key or node it concerns, ending with a period. Two short sentences are fine when a step has a cause and an effect. The step tables in Section 10 are the canonical examples and are themselves held to this standard; a new topic's table is written this way before its `run()` is implemented.
+**Narration house style.** One plain sentence per step, present tense, naming the key or node it concerns, ending with a period. Counts pluralize (`1 item`, `2 items`); the tables write `{n} items` for brevity. Two short sentences are fine when a step has a cause and an effect. The step tables in Section 10 are the canonical examples and are themselves held to this standard; a new topic's table is written this way before its `run()` is implemented.
 
 **Mechanical guard.** `npm run lint:copy` (`scripts/check-copy.mjs`) scans the source, docs, and references for the banned characters and fails the build, locally and in CI. It is the floor, not the standard: passing it does not replace running the antislop checklist.
 

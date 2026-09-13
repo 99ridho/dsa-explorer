@@ -48,6 +48,10 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Heap pseudocode has no blank lines.** The SINK block is appended to the remove, build-heap, and heapsort listings so sub-steps highlight real lines; `highlightLine` values in `operations.ts` are per listing (see the `SinkLines` offsets).
 - **BST node ids are `k${key}`** (`nodeId()` in `src/topics/bst/types.ts`), because keys are unique, so the id is stable across snapshots and Framer Motion can animate a node between positions.
 - **Hash table `M` is fixed at 11** (`HASH_TABLE_M`); Framer Motion (`motion/react`) is the animation layer. Both were §17 open items, decided 2026-09-13.
+- **Linked snapshots store real links** (`nodes` map + `firstId`/`lastId` + `nextId`, helpers in `src/lib/linked-nodes.ts`), never an ordered array: a step can show a node that exists but is not yet reachable, and `nextId` lives in the snapshot so `run()` stays pure. Node ids are `n${nextId}`.
+- **Row canvases are shared.** `ArrayRow` and `LinkedRow` in `src/components/visualizer/canvas/` draw every array-backed and linked topic; highlight-kind classes live in `kinds.ts` there. A topic's `canvas.tsx` only maps its snapshot to cells.
+- **`inputKind: 'text'`** is a free-form field (Stack's Evaluate expression). An operation may set `placeholder` to override the per-kind default in `input-parsing.ts`.
+- **Counts pluralize in narration** (`plural()` in `linked-nodes.ts`): "1 item", never "1 items".
 
 ## Architecture
 
@@ -72,6 +76,9 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `binary-heap` | Complete: insert / remove max or min / build heap / heapsort, tree + array dual view, 7 tests. Min mode flips every comparison and every narration word. |
 | `hash-table` | Complete: insert / search / delete for chaining and for linear probing (six ops, three visible per variant), two canvases, 9 tests. Probing delete rehashes the cluster. |
 | `graph` | Complete: add edge / BFS / DFS / connected components (undirected) / topological sort and Kosaraju-Sharir strong components (directed), force-layout SVG with arrowheads when directed, 10 tests. |
+| `queue` | Complete: enqueue / dequeue on a resizing array (wrap-around, doubling, halving narrated) or a linked list (variant `impl`), 12 tests. |
+| `stack` | Complete: push / pop on a resizing array or a linked list, plus Evaluate expression (Dijkstra's two-stack algorithm, `inputKind: 'text'`), 11 tests. |
+| `linked-list` | Complete: insert first / insert last / remove first / traverse, 8 tests. |
 
 SPEC §10.5 to §10.12 (2026-09-13) specify the remaining eight topics: `complexity`, `arrays`, `queue`, `stack`, `sorting`, `linked-list`, `searching`, `b-tree`. Their `content.ts` files are generated and committed; the other module files land phase by phase (stack, queue, linked list; sorting, searching; B-tree; complexity, arrays). Registry order is week order, so add each module at its week position. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 

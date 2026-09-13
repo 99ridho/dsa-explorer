@@ -7,8 +7,19 @@ import { topics } from './registry'
 
 const LANGS: SnippetLanguage[] = ['cpp', 'java', 'python']
 
-/** Inputs that drive each operation through its interesting branches on the seed state. */
+/**
+ * Inputs that drive each operation through its interesting branches on the seed state.
+ * Every input runs on the fresh seed, so branches that need a prior state (a halving pop, a
+ * second push that resizes, a B-tree root split) are covered by each topic's own test file.
+ */
 const INPUTS: Record<string, unknown[]> = {
+  'queue/array-enqueue': [7],
+  'queue/linked-enqueue': [7],
+  'stack/array-push': [7],
+  'stack/linked-push': [7],
+  'stack/evaluate': ['( 1 + ( ( 2 + 3 ) * ( 4 * 5 ) ) )', '( 1 + x )', '( 1 / 0 )', '( 1 )'],
+  'linked-list/insert-first': [3],
+  'linked-list/insert-last': [3],
   'bst/insert': [45, 50],
   'bst/search': [60, 99],
   'bst/delete': [20, 30, 99],
