@@ -65,6 +65,7 @@ dsa-explorer/
 │   │   │   ├── operations.ts         # insert, search, delete, traverse
 │   │   │   ├── canvas.tsx            # TreeCanvas
 │   │   │   ├── pseudocode.ts
+│   │   │   ├── snippets.ts           # C++ / Java / Python per operation, mapped to pseudocode lines
 │   │   │   └── content.ts            # real-world usage + core material text
 │   │   ├── binary-heap/  (same shape)
 │   │   ├── hash-table/   (same shape)
@@ -143,12 +144,22 @@ export interface VariantConfig {
   default: string;
 }
 
+export type SnippetLanguage = "cpp" | "java" | "python";
+
+export interface SnippetLine {
+  text: string;
+  pseudo?: number;                  // 1-indexed pseudocode line this code line implements
+}
+
+export type OperationSnippets = Record<SnippetLanguage, SnippetLine[]>;
+
 export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   slug: string;
   title: string;
   weekLabel: string;                // e.g. "Week 9" or "Weeks 10–11"
   operations: OperationDefinition<TState, unknown, TSnapshot>[];
   pseudocode: Record<string, string[]>;  // operationId -> lines of pseudocode
+  snippets: Record<string, OperationSnippets>; // operationId -> C++ / Java / Python with a pseudocode line map
   CanvasComponent: React.ComponentType<{ snapshot: TSnapshot; variant?: string }>;
   content: { realWorldUsage: string; coreMaterial: string };
   variant?: VariantConfig;
@@ -164,7 +175,7 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 - **`AppSidebar`**: lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
 - **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`.
 - **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind`, a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
-- **`CodePanel`**: renders `pseudocode[currentOperationId]` as a numbered `<pre>` block; the line matching `currentStep.highlightLine` gets a highlighted background. Show `currentStep.description` above or below the block.
+- **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width.
 - **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
 
 ## 9. Step Engine: Playback Semantics
@@ -195,6 +206,8 @@ Rules:
 ## 10. Per-Topic Specifications
 
 Each subsection gives: the snapshot shape, the canvas layout rule, and pseudocode + a step table per operation. The step table is the contract for `run()`: implement `run()` so it emits exactly these steps, in this order, for these trigger conditions.
+
+Every operation also ships a C++, Java, and Python implementation in the topic's `snippets.ts`, each line optionally mapped to the pseudocode line it implements (`SnippetLine.pseudo`). Java follows the algs4 shape (Sedgewick & Wayne: `less`/`exch`, `swim`/`sink`, `marked[]`/`edgeTo[]`, and so on); C++ and Python are direct translations, not idiomatic rewrites, so a student can read the three side by side. Contract: every pseudocode line a step can highlight must have at least one mapped line in each language; `src/topics/snippets.test.ts` runs every operation on its seed state and checks this. Comments inside snippets are prose and fall under Section 18.
 
 ### 10.1 Binary Search Tree, `/topic/bst`
 
@@ -616,9 +629,9 @@ Same pattern as the `dsa-online-judge` project:
 
 To add a topic from the rest of the RPS (queue, stack, sorting, linked list, B-tree) later:
 
-1. Create `src/topics/<slug>/` with the same five files (`index.ts`, `operations.ts`, `canvas.tsx`, `pseudocode.ts`, `content.ts`).
+1. Create `src/topics/<slug>/` with the same six files (`index.ts`, `operations.ts`, `canvas.tsx`, `pseudocode.ts`, `snippets.ts`, `content.ts`).
 2. Define the topic's `TSnapshot` shape and canvas rendering rule.
-3. Write pseudocode + a step table per operation, in the same format as Section 10.
+3. Write pseudocode + a step table per operation, in the same format as Section 10, then the three language snippets with their line map.
 4. Register the module in `topics/registry.ts`.
 5. No changes to `AppSidebar`, `TopicPage`, `VisualizerShell`, or the step engine are needed; they're all generic over `TopicModule`.
 
@@ -647,6 +660,8 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 
 - [ ] All four v1 topics reachable via their routes, listed correctly in the sidebar with week labels.
 - [ ] Every operation in Section 10's tables is triggerable, animates through its full step sequence, and the code panel highlights the correct line at every step.
+- [ ] The code panel never clips a line, on desktop or at a 400px viewport; long lines wrap with a hanging indent and the block has no horizontal scroll.
+- [ ] Every operation offers C++, Java, and Python tabs, and stepping highlights the mapped line in whichever tab is open.
 - [ ] Play/pause/step-forward/step-backward/speed/scrub all function correctly against a precomputed step array.
 - [ ] Randomize and Reset work without going through the step engine (instant, not animated).
 - [ ] Hash Table's chaining/probing toggle and Graph's directed/undirected toggle each correctly swap canvas component and operation list.

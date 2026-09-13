@@ -124,11 +124,12 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
 
       <Card className="min-w-0 md:col-start-2 md:row-span-2 md:row-start-2">
         <CardHeader>
-          <CardTitle className="text-base">Pseudocode</CardTitle>
+          <CardTitle className="text-base">Code</CardTitle>
         </CardHeader>
         <CardContent>
           <CodePanel
             lines={currentOperation ? (topic.pseudocode[currentOperation.id] ?? []) : []}
+            snippets={currentOperation ? topic.snippets[currentOperation.id] : undefined}
             currentStep={playback.currentStep}
             operationLabel={currentOperation?.label ?? null}
           />

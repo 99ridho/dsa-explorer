@@ -34,12 +34,22 @@ export interface VariantConfig {
   default: string
 }
 
+export type SnippetLanguage = 'cpp' | 'java' | 'python'
+
+export interface SnippetLine {
+  text: string
+  pseudo?: number // 1-indexed pseudocode line this code line implements; drives synced highlighting
+}
+
+export type OperationSnippets = Record<SnippetLanguage, SnippetLine[]>
+
 export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   slug: string
   title: string
   weekLabel: string // e.g. "Week 9" or "Weeks 10–11"
   operations: OperationDefinition<TState, unknown, TSnapshot>[]
   pseudocode: Record<string, string[]> // operationId -> lines of pseudocode
+  snippets: Record<string, OperationSnippets> // operationId -> C++ / Java / Python with a pseudocode line map
   CanvasComponent: React.ComponentType<{ snapshot: TSnapshot; variant?: string }>
   content: { realWorldUsage: string; coreMaterial: string }
   variant?: VariantConfig

@@ -3,6 +3,7 @@ import { TreeCanvas } from './canvas'
 import { coreMaterial, realWorldUsage } from './content'
 import { bstOperations, buildTree } from './operations'
 import { bstPseudocode } from './pseudocode'
+import { bstSnippets } from './snippets'
 import type { BSTSnapshot, BSTState } from './types'
 
 /** Fixed seed tree so the page is usable before Randomize; Reset returns to it. */
@@ -21,6 +22,7 @@ export const bst: TopicModule<BSTState, BSTSnapshot> = {
   weekLabel: 'Week 9',
   operations: bstOperations,
   pseudocode: bstPseudocode,
+  snippets: bstSnippets,
   CanvasComponent: TreeCanvas,
   content: { realWorldUsage, coreMaterial },
   createInitialState: () => buildTree(SEED_KEYS),

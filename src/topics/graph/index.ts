@@ -3,6 +3,7 @@ import { GraphCanvas } from './canvas'
 import { coreMaterial, realWorldUsage } from './content'
 import { buildGraph, graphOperations } from './operations'
 import { graphPseudocode } from './pseudocode'
+import { graphSnippets } from './snippets'
 import type { GraphSnapshot, GraphState } from './types'
 
 const isDirected = (v?: string) => v === 'directed'
@@ -38,6 +39,7 @@ export const graph: TopicModule<GraphState, GraphSnapshot> = {
   weekLabel: 'Weeks 13–15',
   operations: graphOperations,
   pseudocode: graphPseudocode,
+  snippets: graphSnippets,
   CanvasComponent: GraphCanvas,
   content: { realWorldUsage, coreMaterial },
   variant: {

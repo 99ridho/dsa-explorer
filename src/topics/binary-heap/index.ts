@@ -3,6 +3,7 @@ import { HeapCanvas } from './canvas'
 import { coreMaterial, realWorldUsage } from './content'
 import { buildHeap, heapOperations } from './operations'
 import { heapPseudocode } from './pseudocode'
+import { heapSnippets } from './snippets'
 import type { HeapMode, HeapSnapshot, HeapState } from './types'
 
 const asMode = (v?: string): HeapMode => (v === 'min' ? 'min' : 'max')
@@ -26,6 +27,7 @@ export const binaryHeap: TopicModule<HeapState, HeapSnapshot> = {
   weekLabel: 'Weeks 10–11',
   operations: heapOperations,
   pseudocode: heapPseudocode,
+  snippets: heapSnippets,
   CanvasComponent: HeapCanvas,
   content: { realWorldUsage, coreMaterial },
   variant: {
