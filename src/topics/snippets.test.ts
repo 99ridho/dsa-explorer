@@ -26,6 +26,8 @@ const INPUTS: Record<string, unknown[]> = {
   'searching/bin-get': [21, 22, 99],
   'searching/bin-put': [21, 22],
   'bst/insert': [45, 50],
+  'b-tree/get': [60, 25],
+  'b-tree/put': [40, 80, 50, 10],
   'bst/search': [60, 99],
   'bst/delete': [20, 30, 99],
   'binary-heap/insert': [85],

@@ -51,6 +51,7 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Linked snapshots store real links** (`nodes` map + `firstId`/`lastId` + `nextId`, helpers in `src/lib/linked-nodes.ts`), never an ordered array: a step can show a node that exists but is not yet reachable, and `nextId` lives in the snapshot so `run()` stays pure. Node ids are `n${nextId}`.
 - **Row canvases are shared.** `ArrayRow` and `LinkedRow` in `src/components/visualizer/canvas/` draw every array-backed and linked topic; highlight-kind classes live in `kinds.ts` there. A topic's `canvas.tsx` only maps its snapshot to cells.
 - **`inputKind: 'text'`** is a free-form field (Stack's Evaluate expression). An operation may set `placeholder` to override the per-kind default in `input-parsing.ts`.
+- **B-tree `M` is fixed at 4** (`BTREE_M`). Guide keys always equal their subtree's smallest key (one line beyond algs4, SPEC §10.12); `layoutMultiwayTree` in `tree-layout.ts` positions nodes by subtree width.
 - **Counts pluralize in narration** (`plural()` in `linked-nodes.ts`): "1 item", never "1 items".
 
 ## Architecture
@@ -81,6 +82,7 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `linked-list` | Complete: insert first / insert last / remove first / traverse, 8 tests. |
 | `sorting` | Complete: load / selection sort / insertion sort / shellsort with compare and exchange counts as badges, 7 tests. |
 | `searching` | Complete: get / put on an unordered list (sequential search) or an ordered array (binary search with rank), FrequencyCounter values, 9 tests. |
+| `b-tree` | Complete: get / put with leaf, parent, and root splits (algs4 `BTree.java`, M = 4, guide keys kept equal to the subtree minimum), multiway SVG layout, 10 tests. |
 
 SPEC §10.5 to §10.12 (2026-09-13) specify the remaining eight topics: `complexity`, `arrays`, `queue`, `stack`, `sorting`, `linked-list`, `searching`, `b-tree`. Their `content.ts` files are generated and committed; the other module files land phase by phase (stack, queue, linked list; sorting, searching; B-tree; complexity, arrays). Registry order is week order, so add each module at its week position. Operations are scoped with `variants` (SPEC §7); `VisualizerShell` filters the list by the active variant and falls back to the first visible operation.
 

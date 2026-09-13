@@ -7,6 +7,7 @@ import { sorting } from './sorting'
 import { linkedList } from './linked-list'
 import { searching } from './searching'
 import { bst } from './bst'
+import { bTree } from './b-tree'
 import { binaryHeap } from './binary-heap'
 import { hashTable } from './hash-table'
 import { graph } from './graph'
@@ -20,6 +21,7 @@ export const topics: TopicModule[] = [
   linkedList as unknown as TopicModule,
   searching as unknown as TopicModule,
   bst as unknown as TopicModule,
+  bTree as unknown as TopicModule,
   binaryHeap as unknown as TopicModule,
   hashTable as unknown as TopicModule,
   graph as unknown as TopicModule,

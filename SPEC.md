@@ -1201,7 +1201,7 @@ interface BTreeSnapshot {
 type BTreeState = BTreeSnapshot;
 ```
 
-**Semantics:** `BTree.java` from the reference implementation, exactly. Internal entries hold a key and a child link, the key being the smallest key of that child's subtree at the time the entry was made; external entries hold a key and its value. Descend into child `j` when `j + 1 == h.m` or `key < h.entry[j+1].key`. After an insertion, a node holding `M` entries splits: entries 0 and 1 stay, entries 2 and 3 move to a new node, and the parent receives a guide entry `(u.entry[0].key, u)` right after the child it descended into. A root split creates a two-entry root and increments `height`. The leftmost guide key of a node is never rewritten (the reference implementation does not do it either), so narration never quotes `entry[0].key` of the child it descends into; it quotes the key it compared against. One intentional deviation: `put` of a key that is already present stops with a single step instead of storing a duplicate, because the reference text calls this a symbol table. Values are not visualized (the input is a key); the Java snippet keeps `val`. The tree holds at most 30 keys.
+**Semantics:** `BTree.java` from the reference implementation, with two intentional deviations. Internal entries hold a key and a child link, the key being the smallest key of that child's subtree; external entries hold a key and its value. Descend into child `j` when `j + 1 == h.m` or `key < h.entry[j+1].key`. After an insertion, a node holding `M` entries splits: entries 0 and 1 stay, entries 2 and 3 move to a new node, and the parent receives a guide entry `(u.entry[0].key, u)` right after the child it descended into. A root split creates a two-entry root and increments `height`. Deviation 1: when a new minimum descends into child `j` with `key < h.entry[j].key` (only possible for `j = 0`), the guide key is rewritten to `key` (line 10). The reference implementation leaves it stale, which after a root split draws a node such as `20 | 20`, and a student reads that as a bug; keeping every guide key equal to its subtree's smallest key keeps the picture honest, and the Java snippet carries the same one extra line. Deviation 2: `put` of a key that is already present stops with a single step instead of storing a duplicate, because the reference text calls this a symbol table. Values are not visualized (the input is a key); the Java snippet keeps `val`. The tree holds at most 30 keys.
 
 **Canvas layout:** an SVG. Each node is a horizontal run of `entries.length` key boxes (30 × 26), laid out by `layoutMultiwayTree` (`lib/layout/tree-layout.ts`): a post-order pass computes each subtree's width, children pack left to right, a parent centers over its children, `y = depth × vertical spacing`. Each internal entry draws a line from its bottom center to its child's top center. External nodes are filled; internal nodes are outlined. The viewBox is computed from the extents, as in 10.1.
 
@@ -1230,15 +1230,16 @@ type BTreeState = BTreeSnapshot;
 7    if ht == 0: j = number of entries in h with key < new key
 8    else:
 9      find j with j + 1 == h.m or key < h.entry[j+1].key
-10     u = INSERT(h.entry[j].child, key, val, ht - 1)
-11     if u is null: return null
-12     t = ENTRY(u.entry[0].key, u); j = j + 1
-13   shift h.entry[j..] right; h.entry[j] = t; h.m = h.m + 1
-14   if h.m < M: return null
-15   return SPLIT(h)
-16 SPLIT(h):
-17   t = NODE(h.entry[M/2 .. M-1]); h.m = M / 2
-18   return t
+10     if key < h.entry[j].key: h.entry[j].key = key
+11     u = INSERT(h.entry[j].child, key, val, ht - 1)
+12     if u is null: return null
+13     t = ENTRY(u.entry[0].key, u); j = j + 1
+14   shift h.entry[j..] right; h.entry[j] = t; h.m = h.m + 1
+15   if h.m < M: return null
+16   return SPLIT(h)
+17 SPLIT(h):
+18   t = NODE(h.entry[M/2 .. M-1]); h.m = M / 2
+19   return t
 ```
 
 Operation ids are `get` (Get, `inputKind: "key"`) and `put` (Put, `inputKind: "key"`). Every step carries `variables.probes`, the number of nodes visited so far, which is what the reference's log_M(n) bound counts.
@@ -1247,17 +1248,18 @@ Operation ids are `get` (Get, `inputKind: "key"`) and `put` (Put, `inputKind: "k
 |---|---|---|---|
 | get / put, descend | 7 / 9 | "`{key}` < `{entry[j+1].key}`, so descend into child `{j}`." | node `current`, `entryIndex = j` |
 | get / put, descend into the last child | 7 / 9 | "`{key}` >= `{entry[j].key}`, the last guide key, so descend into child `{j}`." | node `current`, `entryIndex = j` |
-| get, compare in a leaf | 4 | "Comparing `{key}` with `{e.key}` in this leaf." | leaf `current`, `entryIndex` |
+| put, new minimum | 10 | "`{key}` is smaller than the guide key `{old}`, so the guide key becomes `{key}`." | node `new`, `entryIndex = j` |
+| get, compare in a leaf (the hit replaces the compare for the matching entry) | 4 | "Comparing `{key}` with `{e.key}` in this leaf." | leaf `current`, `entryIndex` |
 | get, hit | 4 | "`{key}` matches this entry: HIT." | leaf `found`, `entryIndex` |
 | get, miss | 8 | "`{key}` is not in this leaf: MISS." | leaf `current` |
 | put, duplicate | 7 | "`{key}` is already in this leaf, so nothing changes." | leaf `found`, stop |
 | put, at the 30-key cap | 2 | "The tree holds 30 keys, the most this demo shows, so `{key}` is not added." | none, stop |
-| put, place | 13 | "Placing `{key}` at position `{j}` in the leaf: it now holds `{m}` entries." | leaf `new`, `entryIndex = j` |
-| put, split | 17 | "The node holds `{M}` entries, so split it: `{k0}` and `{k1}` stay, `{k2}` and `{k3}` move to a new node." | both nodes `split` |
-| put, parent gains an entry | 13 | "Adding guide key `{u.entry[0].key}` for the new node to the parent at position `{j}`: it now holds `{m}` entries." | parent `new`, `entryIndex = j` |
+| put, place | 14 | "Placing `{key}` at position `{j}` in the leaf: it now holds `{m}` entries." | leaf `new`, `entryIndex = j` |
+| put, split | 18 | "The node holds `{M}` entries, so split it: `{k0}` and `{k1}` stay, `{k2}` and `{k3}` move to a new node." | both nodes `split` |
+| put, parent gains an entry | 14 | "Adding guide key `{u.entry[0].key}` for the new node to the parent at position `{j}`: it now holds `{m}` entries." | parent `new`, `entryIndex = j` |
 | put, root split | 4 | "The root split into two nodes, so a new root above them adds a level: height is now `{height}`." | new root `new` |
 
-Seed: put `50, 20, 70, 30, 60, 80, 90` in that order, giving a root with guide keys `20, 50, 70` over the leaves `[20, 30]`, `[50, 60]`, `[70, 80, 90]`; one more key in the last leaf splits it, and three more keys in the first leaf force a root split. Randomize: 8 to 12 unique keys in 1 to 99, inserted in random order.
+Seed: put `50, 20, 70, 30, 60` in that order, giving a root with guide keys `20, 50` over the leaves `[20, 30]` and `[50, 60, 70]`. Putting `80` splits the second leaf and the root still has room; putting `10` then `5` rewrites the guide key, splits the first leaf, and splits the root (height 2). Randomize: 8 to 12 unique keys in 1 to 99, inserted in random order.
 
 ## 11. Content Integration
 
