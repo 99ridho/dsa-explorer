@@ -19,10 +19,13 @@ export function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="px-4 py-3">
-        <p className="text-xs font-medium text-muted-foreground">
-          Algoritma dan Struktur Data
+        <p className="text-sm font-medium text-muted-foreground">
+          Data Structure & Algorithms Course
         </p>
-        <p className="text-sm text-muted-foreground">Universitas Negeri Jakarta</p>
+        <div className='gap-y-2'>
+          <p className="text-xs text-muted-foreground">Information System & Technology</p>
+          <p className="text-xs text-muted-foreground">Universitas Negeri Jakarta</p>
+        </div>
       </SidebarHeader>
       <SidebarContent>
         {topicsByWeek().map((group) => (
@@ -51,7 +54,10 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter className="px-4 py-3">
         <p className="text-xs text-muted-foreground">
-          Reference: Sedgewick &amp; Wayne, <em>Algorithms</em>, 4th ed.
+          Reference: <a href='https://algs4.cs.princeton.edu/home/'>Sedgewick &amp; Wayne, <em>Algorithms</em>, 4th ed.</a>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Built by <a href='https://github.com/99ridho/dsa-explorer'>@99ridho</a> + Claude
         </p>
       </SidebarFooter>
     </Sidebar>
