@@ -346,7 +346,15 @@ Step table follows the same descend pattern as Insert (lines 4–5), ending in e
 5    INORDER(node.right)
 ```
 
-Each `VISIT` (line 4) emits a step highlighting that node and appending its key to a running visited-order list shown in the description: *"Visit `{key}`. Visited so far: `{list}`."* An empty tree emits a single line-2 step: *"The tree is empty, so there is nothing to visit."*
+| Trigger | Line | Description template | Snapshot delta |
+|---|---|---|---|
+| Enter a node | 3 | "Go left from `{key}` before visiting it." | node `highlight: "current"` |
+| Empty left or right link | 2 | "The {left/right} link of `{key}` is empty, so return." | that node `highlight: "current"` |
+| Visit | 4 | "Visit `{key}`. Visited so far: `{list}`." | node `highlight: "found"` |
+| Leave for the right subtree | 5 | "Go right from `{key}`." | node `highlight: "current"` |
+| Empty tree | 2 | "The tree is empty, so there is nothing to visit." | none |
+
+Each node emits, in order: line 3, its left subtree (or a line-2 step for an empty left link), line 4, line 5, its right subtree (or a line-2 step for an empty right link). The seed tree gives 29 steps. `variables.visited` carries the running list on every step once it is non-empty.
 
 ### 10.2 Binary Heap, `/topic/binary-heap`
 
