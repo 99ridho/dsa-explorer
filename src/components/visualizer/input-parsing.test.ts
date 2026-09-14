@@ -14,7 +14,7 @@ describe('parseInput', () => {
 
   it('text returns the trimmed expression and rejects an empty one', () => {
     expect(parseInput('text', '  ( 1 + 2 ) ')).toEqual({ ok: true, value: '( 1 + 2 )' })
-    expect(parseInput('text', '   ')).toEqual({ ok: false, error: 'Enter an expression, e.g. ( 1 + ( 2 * 3 ) ).' })
+    expect(parseInput('text', '   ')).toEqual({ ok: false, error: 'The field is empty. Type a value, then press Go.' })
   })
 
   it('has a placeholder for every input kind', () => {

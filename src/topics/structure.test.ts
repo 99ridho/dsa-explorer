@@ -3,6 +3,7 @@
 // fields stay scalar on every step of every seed operation, and the copy meets the §18 floor.
 import { describe, expect, it } from 'vitest'
 import type { Step, StructureSpec } from '@/types/step-engine'
+import { caseStudies } from '@/case-studies/registry'
 import { topics } from './registry'
 import { INPUTS } from './test-inputs'
 
@@ -41,7 +42,10 @@ function copyStrings(structure: StructureSpec): [string, string][] {
   return out
 }
 
-describe.each(topics.map((t) => [t.slug, t] as const))('%s structure', (_slug, topic) => {
+// Case study simulators are TopicModules too (SPEC.md §19.0), so they meet the same contract.
+const modules = [...topics, ...caseStudies.map((c) => c.simulator)]
+
+describe.each(modules.map((t) => [t.slug, t] as const))('%s structure', (_slug, topic) => {
   const { structure } = topic
   const ids = topic.operations.map((o) => o.id)
 

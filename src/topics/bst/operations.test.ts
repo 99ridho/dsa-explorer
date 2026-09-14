@@ -128,10 +128,14 @@ describe('delete (Hibbard)', () => {
 })
 
 describe('inorder', () => {
-  it('emits one VISIT step per node at line 4, in sorted order', () => {
+  it('steps through lines 2 to 5 and visits keys in sorted order', () => {
     const { steps } = runInorder(tree())
-    expect(lines(steps)).toEqual([4, 4, 4, 4, 4, 4, 4])
-    expect(steps.map((s) => highlighted(s.snapshot, 'current')[0])).toEqual([20, 30, 40, 50, 60, 70, 80])
+    // 50(30(20, 40), 70(60, 80)): each leaf is 3, 2, 4, 5, 2.
+    const leaf = [3, 2, 4, 5, 2]
+    expect(lines(steps)).toEqual([3, 3, ...leaf, 4, 5, ...leaf, 4, 5, 3, ...leaf, 4, 5, ...leaf])
+    const visits = steps.filter((s) => s.highlightLine === 4)
+    expect(visits.map((s) => highlighted(s.snapshot, 'found')[0])).toEqual([20, 30, 40, 50, 60, 70, 80])
+    expect(steps[0].variables).toBeUndefined()
     expect(steps.at(-1)!.variables).toEqual({ visited: '20, 30, 40, 50, 60, 70, 80' })
   })
 

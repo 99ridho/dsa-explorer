@@ -28,7 +28,7 @@ export function parseInput(kind: OperationDefinition['inputKind'], raw: string):
       return { ok: true, value: { from: m[1], to: m[2] } }
     }
     case 'text': {
-      if (text === '') return { ok: false, error: 'Enter an expression, e.g. ( 1 + ( 2 * 3 ) ).' }
+      if (text === '') return { ok: false, error: 'The field is empty. Type a value, then press Go.' }
       return { ok: true, value: text }
     }
   }

@@ -251,15 +251,18 @@ export function runInorder(state: BSTState): OperationResult<BSTSnapshot> {
   const tree = cloneSnapshot(state)
   const visited: number[] = []
 
-  const walk = (id: string | null) => {
-    if (id === null) return
+  const vars = () => (visited.length > 0 ? { visited: visited.join(', ') } : undefined)
+
+  const walk = (id: string) => {
     const node = tree.nodes[id]
-    walk(node.left)
+    rec.push(tree, 3, `Go left from ${node.key} before visiting it.`, { [id]: 'current' }, vars())
+    if (node.left) walk(node.left)
+    else rec.push(tree, 2, `The left link of ${node.key} is empty, so return.`, { [id]: 'current' }, vars())
     visited.push(node.key)
-    rec.push(tree, 4, `Visit ${node.key}. Visited so far: ${visited.join(', ')}.`, { [id]: 'current' }, {
-      visited: visited.join(', '),
-    })
-    walk(node.right)
+    rec.push(tree, 4, `Visit ${node.key}. Visited so far: ${visited.join(', ')}.`, { [id]: 'found' }, vars())
+    rec.push(tree, 5, `Go right from ${node.key}.`, { [id]: 'current' }, vars())
+    if (node.right) walk(node.right)
+    else rec.push(tree, 2, `The right link of ${node.key} is empty, so return.`, { [id]: 'current' }, vars())
   }
 
   if (tree.rootId === null) {

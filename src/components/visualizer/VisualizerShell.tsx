@@ -75,6 +75,8 @@ export function VisualizerShell({ topic, onVariantChange }: VisualizerShellProps
       const target = e.target as HTMLElement | null
       if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName)) return
       if (target?.isContentEditable) return
+      // A region such as the case study quiz keeps Space and the arrows for its own controls.
+      if (target?.closest('[data-shell-keys="off"]')) return
       if (steps.length === 0) return
       if (e.key === ' ') {
         e.preventDefault()

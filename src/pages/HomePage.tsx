@@ -1,6 +1,7 @@
 import { Link } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { caseStudies } from '@/case-studies/registry'
 import { topicsByWeek } from '@/topics/registry'
 
 export function HomePage() {
@@ -40,6 +41,31 @@ export function HomePage() {
           </div>
         </section>
       ))}
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-medium text-muted-foreground">Case Studies</h2>
+        <p className="max-w-prose text-sm text-muted-foreground">
+          Each case study takes one everyday problem, explains which structures solve it and why, runs the solution next to a
+          naive one, and ends with a short quiz.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {caseStudies.map((cs) => (
+            <Link key={cs.slug} to={`/case-study/${cs.slug}`} className="group rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Card className="h-full transition-colors group-hover:bg-muted/50">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2">
+                    <CardTitle className="text-lg">{cs.title}</CardTitle>
+                    <Badge variant="outline" className="font-mono">
+                      {cs.weekLabel}
+                    </Badge>
+                  </div>
+                  <CardDescription>{cs.summary}</CardDescription>
+                </CardHeader>
+              </Card>
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }

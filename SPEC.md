@@ -25,7 +25,7 @@ An in-browser, single-page app that lets students interactively build and operat
 
 **Non-Goals (v1)**
 - No backend, no persistence, no user accounts. Everything is client-side, in-memory, reset on page reload.
-- No quiz/scoring/practice-mode features. This is a visualization tool, not an assessment tool.
+- No quiz/scoring/practice-mode features on topic pages. This is a visualization tool, not an assessment tool. The one exception is the short trivia quiz at the end of each case study (Section 19), scored in memory and reset on reload.
 - No BST rank/select/floor/ceiling, no heap index-priority-queue. Both are deferred past v1 (see Section 14).
 
 ## 3. Tech Stack
@@ -118,6 +118,9 @@ Topic-slug routes are canonical. Week is metadata shown in the sidebar and on th
 | `/topic/binary-heap` | `TopicPage` for Binary Heap (Week 11) |
 | `/topic/hash-table` | `TopicPage` for Hash Table (Week 12) |
 | `/topic/graph` | `TopicPage` for Graph (Weeks 13–15) |
+| `/case-study/canteen-orders` | `CaseStudyPage` for the canteen order counter (Weeks 1–7), Section 19.3 |
+| `/case-study/er-triage` | `CaseStudyPage` for the ER triage desk (Weeks 9–11), Section 19.2 |
+| `/case-study/study-plan` | `CaseStudyPage` for the study plan builder (Weeks 12–15), Section 19.1 |
 
 `TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial` | Structure (`StructurePanel` over `structure`, marking the representation on the canvas). The page mirrors the shell's variant through `onVariantChange` so the Structure tab follows the Operation card's toggle. At `lg` and up the page is locked to the viewport: the document never scrolls, and only two regions do, the Code listing inside the visualizer and the active materials panel. The title, canvas, Operation, Playback, and both tab strips stay where they are while a student reads or steps. If the viewport is too short for the canvas plus Operation plus Playback, the visualizer column scrolls as a fallback. Below `lg` the columns stack, visualizer first, and the document scrolls normally. CPMK is deliberately omitted; refer students to the RPS for that.
 
@@ -230,6 +233,7 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 - **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width. At `lg` the listing is the only part of the panel that scrolls (the description and the tab strip stay put); it is keyboard focusable with a visible ring, and stepping keeps the highlighted line inside it by scrolling the listing itself, never the page.
 - **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
 - **`LiveFields`**: one chip per entry of `structure.liveFields(snapshot, variant)` for the snapshot the canvas shows, in the badge style of `CodePanel`'s step variables, prefixed with the active representation's label. The chips sit in a grid whose column count depends on the width alone (fixed tracks), so the row keeps its height while values change and stepping never moves the page; every chip's `key = value` text fits one track (`src/topics/structure.test.ts` caps it at 14 characters).
+- **`FocusCaption`, `DecisionList`, `QuizPanel`** (`src/components/case-study/`, Section 19): the view switch above a case study canvas, one button per part of the snapshot; the Reasoning tab's chosen and rejected structures per requirement; and the quiz. `FocusCaption` and `QuizPanel` set `data-shell-keys="off"`, and `VisualizerShell`'s keyboard listener ignores events from inside such a region, so Space and the arrow keys act on the quiz's own controls.
 - **`StructurePanel`**: the Structure tab. The ADT name and summary, a table of the ADT operations (signature, note, "Shown by {operation label}" for the visible demonstrating operation, and the cost resolved for the active representation), the ADT invariants, then one block per representation in declared order: label, an "on the canvas" badge on the active one (or a cue naming the variant toggle on the others), the declaration with `CodePanel`'s hanging indent, the fields table, and the representation's own invariants. A closing list names the operations in `algorithms`. Structured JSX, because `MarkdownContent` renders no tables.
 
 ## 9. Step Engine: Playback Semantics
@@ -346,7 +350,15 @@ Step table follows the same descend pattern as Insert (lines 4–5), ending in e
 5    INORDER(node.right)
 ```
 
-Each `VISIT` (line 4) emits a step highlighting that node and appending its key to a running visited-order list shown in the description: *"Visit `{key}`. Visited so far: `{list}`."* An empty tree emits a single line-2 step: *"The tree is empty, so there is nothing to visit."*
+| Trigger | Line | Description template | Snapshot delta |
+|---|---|---|---|
+| Enter a node | 3 | "Go left from `{key}` before visiting it." | node `highlight: "current"` |
+| Empty left or right link | 2 | "The {left/right} link of `{key}` is empty, so return." | that node `highlight: "current"` |
+| Visit | 4 | "Visit `{key}`. Visited so far: `{list}`." | node `highlight: "found"` |
+| Leave for the right subtree | 5 | "Go right from `{key}`." | node `highlight: "current"` |
+| Empty tree | 2 | "The tree is empty, so there is nothing to visit." | none |
+
+Each node emits, in order: line 3, its left subtree (or a line-2 step for an empty left link), line 4, line 5, its right subtree (or a line-2 step for an empty right link). The seed tree gives 29 steps. `variables.visited` carries the running list on every step once it is non-empty.
 
 ### 10.2 Binary Heap, `/topic/binary-heap`
 
@@ -1378,6 +1390,9 @@ The explorer's v1 scope (Section 2) was limited to four topics; the 2026-09-13 e
 | Binary Heap | 11 | Drafted | **Specified, Section 10.2; implemented** |
 | Hash Table | 12 | Drafted | **Specified, Section 10.3; implemented** |
 | Graph | 13–15 | Drafted | **Specified, Section 10.4; implemented** |
+| Case study: canteen order counter | 1–7 | Not a slide deck; hand-written copy | **Specified, Section 19.3; implemented** |
+| Case study: ER triage desk | 9–11 | Not a slide deck; hand-written copy | **Specified, Section 19.2; implemented** |
+| Case study: study plan builder | 12–15 | Not a slide deck; hand-written copy | **Specified, Section 19.1; implemented** |
 
 Governance rule: a topic's row only moves to "Specified" once its full Section 10 subsection is written and reviewed; the roadmap doesn't authorize skipping straight to implementation off just a slide deck. Slide-deck drafting and explorer-spec drafting are tracked separately because they can proceed independently. A row gains "implemented" once its module is registered and its `operations.test.ts` encodes the Section 10 table.
 
@@ -1394,6 +1409,7 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 - [ ] Real-world usage and core material content renders on each topic page, sourced from the four existing markdown files.
 - [ ] Every topic's Structure tab lists its ADT operations with costs and its representation, the badge follows the variant toggle, and the live fields row under the canvas tracks the step being shown.
 - [ ] Responsive layout verified at a mobile viewport width, and the Section 12 layout contract passes `npm run test:e2e` at desktop, tablet, and phone widths.
+- [ ] Each Section 19 case study is reachable at `/case-study/:slug`, listed in the sidebar and on the home page, passes its `operations.test.ts` and `src/case-studies/case-studies.test.ts`, and keeps the layout contract in `e2e/case-study-page.spec.ts`; its quiz can be finished and retried by keyboard.
 - [ ] Builds to a static `dist/`, runs correctly in the production Docker image.
 
 ## 17. Open Items to Confirm Before/During Build
@@ -1423,3 +1439,412 @@ This section is mandatory and not open for negotiation. Every piece of text this
 **Mechanical guard.** `npm run lint:copy` (`scripts/check-copy.mjs`) scans the source, docs, and references for the banned characters and fails the build, locally and in CI. It is the floor, not the standard: passing it does not replace running the antislop checklist.
 
 **Process.** antislop is applied in DURING mode: rules are applied while writing, not audited afterwards. The one-time audit of the pre-existing copy is recorded in `anti-slop/audit-001-2026-09-13.md`; later audits, if any, number upward in that folder.
+
+## 19. Case Studies
+
+A topic page teaches one structure. A case study takes a small, everyday problem that needs several of them, says why each structure fits, runs the solution step by step, and ends with a short quiz. There are three, one per block of the semester. Each story is illustrative (the course references do not describe a canteen, an emergency room, or a study program's planner); every cost or property the pages state is quoted from the week reference that proves it, with the same rule as `structure.ts` (Section 7).
+
+### 19.0 Shared contract
+
+**Types** (`src/types/case-study.ts`). The simulator is a full `TopicModule` (Section 7) that is not in `topics`, so `VisualizerShell`, `CodePanel`, `PlaybackControls`, and `LiveFields` run it unchanged. `TopicModule` is not extended.
+
+```ts
+interface StructureChoice {
+  name: string;          // e.g. "Queue (linked list)"
+  cost: string;          // quoted from the week reference, same rule as structure.ts
+  reason: string;        // one or two sentences, house style
+  topicSlug: string;     // the topic page that teaches it
+}
+
+interface DecisionRow {
+  requirement: string;   // what the scenario needs, in the student's words
+  chosen: StructureChoice;
+  rejected: StructureChoice[];
+}
+
+interface ChoiceQuestion {
+  kind: "choice";
+  id: string;
+  prompt: string;
+  choices: string[];
+  answer: number;        // index into choices
+  explanation: string;   // shown after Check; names the week, never SPEC.md
+  topicSlug: string;
+}
+
+interface PredictQuestion extends Omit<ChoiceQuestion, "kind"> {
+  kind: "predict";
+  operationId: string;   // run on simulator.createInitialState(variant)
+  variant: string;
+  input: unknown;
+  stepIndex: number;     // the step drawn with the simulator canvas; the question asks about the step after it
+  expect: string;        // substring of steps[stepIndex + 1].description, and of choices[answer]
+}
+
+type QuizQuestion = ChoiceQuestion | PredictQuestion;
+
+interface CaseStudyModule<TSnapshot = unknown> {
+  slug: string;
+  title: string;
+  weekLabel: string;               // e.g. "Weeks 1–7"
+  summary: string;                 // one sentence for the home page and sidebar
+  topicSlugs: string[];            // topics the case study draws on, in week order
+  content: { scenario: string; reasoning: string }; // hand-written markdown, not generated
+  decisions: DecisionRow[];
+  simulator: TopicModule<TSnapshot, TSnapshot>;     // slug equals the case study slug
+  quiz: QuizQuestion[];
+}
+```
+
+**Registry.** `src/case-studies/registry.ts` exports `caseStudies: CaseStudyModule[]` in week order and `getCaseStudy(slug)`. The sidebar lists them in a "Case Studies" group after the week groups, and the home page gives them a section after the topics.
+
+**Page.** `/case-study/:slug` renders `CaseStudyPage`, the same layout contract as `TopicPage` (Sections 6 and 12): viewport-locked at `lg` with the simulator's `VisualizerShell` on the left and three tabs on the right, **Scenario** (default, `content.scenario`), **Reasoning** (one block per `DecisionRow`, then `content.reasoning`), and **Quiz**. The header shows the title, the week badge, and a link to every topic in `topicSlugs`. `key={slug}` resets the simulator, the tab, and the quiz on navigation.
+
+**Quiz.** One question at a time. Choices are native radio inputs, so the shell's Space and arrow-key listener (which ignores `INPUT`) never plays or steps while a student answers. Check shows whether the choice is right, the explanation, and a link to the topic; Next moves on; the last question shows the score with a Retry button. A predict question draws `steps[stepIndex].snapshot` with the simulator's own canvas and quotes that step's description above the choices, so the picture always matches the code. Nothing is stored beyond the component.
+
+**Canvas view switch.** A case study snapshot holds several structures and a `focus` naming the one the step is about. Above the canvas, `FocusCaption` shows one button per part. The canvas follows `focus` whenever it changes; a student can open any other part, which stays on screen until the focus changes again, and while it does the button for the step's part has a dashed outline. A part with nothing to show is disabled. The choice is local to the canvas (`useFollowedView` in `src/lib/use-followed-view.ts`), so the shell and `TopicModule` do not change.
+
+**Removals start before the removal.** An operation that takes something out (Treat next, Serve next) first emits a step with the structure untouched and the leaving item marked, so stepping backward reaches the state before anything left.
+
+**Naive versus chosen.** Every simulator has a variant with the chosen design first and a naive design second. Both run the same scenario, and a computed counter in the live fields shows what the naive design costs (a skipped order, a bypassed patient, a broken prerequisite).
+
+**Tests.** `src/case-studies/<slug>/operations.test.ts` is the executable form of the tables below. `src/topics/structure.test.ts` and `src/topics/snippets.test.ts` run over every simulator as well as every topic. `src/case-studies/case-studies.test.ts` checks that each `topicSlug` exists, each `answer` indexes a choice, and each predict question's `expect` appears in the next step and in the right choice. `e2e/case-study-page.spec.ts` checks the layout contract and the quiz flow.
+
+### 19.1 Study plan builder, `/case-study/study-plan` (Weeks 12–15)
+
+**Scenario.** A study program lists its courses by short code and says which course must come before which. A student wants a semester order that never takes a course before its prerequisite, and the planner must say so when no such order exists.
+
+**Variant:** `order: "topological" | "alphabetical"` (default `"topological"`), labeled Topological and Alphabetical. The naive plan sorts codes from A to Z and counts every prerequisite it breaks.
+
+**State & snapshot**
+
+```ts
+interface CourseEntry { code: string; v: number }
+interface StudyPlanSnapshot {
+  focus: "index" | "graph" | "plan";
+  M: number;                              // 11, as in Section 10.3
+  buckets: CourseEntry[][];               // separate chaining, code to vertex
+  codes: string[];                        // codes[v]
+  graph: GraphSnapshot;                   // Section 10.4, directed, vertex labels are codes
+  plan?: { order: string[]; late: string[] }; // late: courses placed before one of their prerequisites
+  highlight?: { bucket: number; index?: number };
+}
+```
+
+`HASH(code)` is the algs4 string hash with `R = 31`: `h = (31 * h + charCode) mod M` over the characters. A code is 2 to 4 letters or digits, stored uppercase. At most 10 courses (Section 10.4's vertex cap). The seed is MTH, PR1, DSC, PR2, DSA, DB, WEB, AI with prerequisites PR1 to PR2, PR2 to DSA, DSC to DSA, PR2 to DB, DB to WEB, PR2 to WEB, DSA to AI, MTH to AI. Randomize walks the candidate prerequisites over the pool MTH, STA, PR1, DSC, PR2, OOP, DSA, DB, WEB, NET, OS, AI in random order (PR1 to PR2, PR2 to OOP, PR2 to DSA, DSC to DSA, PR2 to DB, DB to WEB, OOP to WEB, NET to WEB, PR1 to NET, DSA to OS, MTH to STA, STA to AI, DSA to AI, MTH to AI), keeping each one whose courses still fit a target of 6 to 9 courses, then shuffles the vertex order. Every course it picks sits on at least one edge. Every candidate points from an earlier course to a later one, so the result is always a DAG. The resting state, after Reset, Randomize, or an operation, has `focus: "graph"`.
+
+**Canvas.** The view switch (Section 19.0) offers Code index, Prerequisite digraph, and Study plan, the last enabled only while `plan` is set. `index` draws the 11 buckets as rows of code boxes; `graph` draws the digraph with `GraphCanvas`; `plan` draws the digraph above one row of codes in plan order with late courses marked. Every view renders at the same fixed height so stepping never resizes the card.
+
+**Add course** (`add-course`, `inputKind: "text"`)
+
+```
+1  ADD_COURSE(code):
+2    i = HASH(code)
+3    if code is in bucket[i]: return
+4    v = V; V = V + 1; add vertex v to the digraph
+5    append (code, v) to bucket[i]
+```
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Code is not 2 to 4 letters or digits | 1 | "A course code has 2 to 4 letters or digits, such as PR3." | graph |
+| Hash | 2 | "`{code}` hashes to bucket `{i}`." | index |
+| Compare with an entry | 3 | "Comparing `{code}` with `{other}` in bucket `{i}`." | index |
+| Already present | 3 | "`{code}` is already course `{v}`, so nothing changes." | index |
+| 10 courses already | 4 | "The plan holds at most 10 courses, so `{code}` is not added." | graph |
+| New vertex | 4 | "`{code}` becomes vertex `{v}` of the digraph, with no prerequisites yet." | graph |
+| Append | 5 | "Appending `{code}` to bucket `{i}`: the index now holds `{n}` courses." | index |
+
+**Add prerequisite** (`add-prereq`, `inputKind: "text"`, placeholder "e.g. PR1 before PR2": the course left of `before` is taken first; the word is matched case-insensitively)
+
+```
+1  ADD_PREREQUISITE(before, after):
+2    v = GET(before)
+3    w = GET(after)
+4    if v or w is missing, or v == w: return
+5    add edge v to w
+```
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Input is not `{code} before {code}` with 2 to 4 letters or digits per code | 1 | "Type the course taken first, then before, then the next course, such as PR1 before PR2." | graph |
+| Same code twice | 4 | "A course cannot be its own prerequisite." | graph |
+| Hash `before` / `after` | 2 / 3 | "`{code}` hashes to bucket `{i}`." | index |
+| Compare | 2 / 3 | "Comparing `{code}` with `{other}` in bucket `{i}`." | index |
+| Found | 2 / 3 | "`{code}` is course `{v}`." | index |
+| Missing | 4 | "`{code}` is not in the index. Add it as a course first." | index |
+| Edge exists | 5 | "`{before}` is already a prerequisite of `{after}`." | graph |
+| Add | 5 | "Added edge `{before}` to `{after}`: take `{before}` first." | graph, new edge drawn as `tree` |
+
+Both GET calls count compares in `variables.compares`.
+
+**Build study plan, topological** (`plan-topological`, `variants: ["topological"]`, `inputKind: "none"`)
+
+```
+1  BUILD_PLAN():
+2    for each course v, in vertex order:
+3      if v is unmarked: DFS(v)
+4    return the reverse of postorder
+5  DFS(v):
+6    mark v; put v on the call stack
+7    for each course w that lists v as a prerequisite:
+8      if w is on the call stack: report a cycle
+9      else if w is unmarked: DFS(w)
+10   take v off the call stack; add v to postorder
+```
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Unmarked start | 3 | "`{code}` is unmarked, so start a DFS from `{code}`." | graph |
+| Enter | 6 | "Visiting `{code}`." | graph, vertex `visiting` |
+| Neighbor | 7 | "`{w}` lists `{v}` as a prerequisite." | graph, edge `active` |
+| Neighbor on the call stack | 8 | "`{w}` is still on the call stack, so the prerequisites form a cycle and no study plan exists." Stops. | graph |
+| Neighbor already marked | 9 | "`{w}` is already marked, so skip it." | graph |
+| Neighbor unmarked | 9 | "`{w}` is unmarked, so visit `{w}` next." | graph, edge `tree` |
+| Finish | 10 | "Finished `{code}`: it joins the postorder." | graph, vertex `visited` |
+| Result | 4 | "Study plan: `{order}`." | plan, no late courses |
+
+`variables.postorder` lists the postorder so far (or `empty`).
+
+**Build study plan, alphabetical** (`plan-alphabetical`, `variants: ["alphabetical"]`, `inputKind: "none"`)
+
+```
+1  BUILD_PLAN_ALPHABETICAL():
+2    order = every course code, sorted A to Z
+3    for each prerequisite edge v to w:
+4      if w comes before v in order: count a violation
+5    return order
+```
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Sort | 2 | "Sorting the codes from A to Z gives `{order}`." | plan |
+| Edge in order | 3 | "`{v}` comes before `{w}`, so this prerequisite holds." | plan, edge `tree` |
+| Edge broken | 4 | "`{w}` comes before its prerequisite `{v}`: violation `{k}`." | plan, edge `active`, `w` late |
+| Result | 5 | "The alphabetical plan breaks `{k}` prerequisites." (`1 prerequisite`, or "breaks no prerequisites.") | plan |
+
+Edges are checked in the order they were added. `variables.violations` carries the count.
+
+**Live fields:** `V`, `E`, `M`, `load` (`n / M` to two decimals).
+
+### 19.2 ER triage desk, `/case-study/er-triage` (Weeks 9–11)
+
+**Scenario.** An emergency room admits patients one at a time and gives each a severity from 1 (can wait) to 5 (critical). The desk always treats the most urgent waiting patient next, earliest arrival first on a tie. Every patient has a record number, and the records live in an archive on disk where each node read is a block read.
+
+**Variant:** `triage: "priority" | "arrival"` (default `"priority"`), labeled Priority queue and Arrival queue. The naive desk treats patients in arrival order and counts every time it treats someone while a more urgent patient waits.
+
+**State & snapshot**
+
+```ts
+interface Patient { arrival: number; severity: number; record: number } // arrival numbers start at 101
+interface TriageSnapshot {
+  mode: "priority" | "arrival";
+  focus: "triage" | "archive";
+  waiting: Patient[];        // priority: heap order, waiting[k - 1] is heap position k; arrival: front first
+  archive: BTreeSnapshot;    // Section 10.12, keyed by record number
+  nextArrival: number;
+  treated: number;
+  bypassed: number;          // treatments given while a more urgent patient waited
+  highlight?: { positions: number[]; kind: "new" | "compare" | "swap" | "treat" };
+}
+```
+
+A patient is more urgent than another when its severity is higher, or the severities are equal and it arrived earlier. At most 15 patients wait at once. The archive holds the records of the patients admitted today: it starts empty and the seed admits #101 (severity 2, record 42), #102 (4, 17), #103 (1, 88), #104 (5, 63), #105 (3, 25) in that order, so the seed has 5 waiting patients and 5 records. Treat next keeps the record, so `records` = distinct records admitted, and a record whose patient is still waiting cannot be admitted again. Randomize admits 5 to 8 patients with distinct random records into an empty archive.
+
+**Canvas.** The view switch (Section 19.0) offers the waiting list and the record archive. `triage` draws the heap as a tree of labeled boxes (`#104` over `S5 R63`: arrival number, then severity and record number) in priority mode, or one row of patients with `first` over the front in arrival mode. `archive` draws `BTreeCanvas`, whose keys are record numbers. Both views take the B-tree canvas's fixed height (300). A key line under the view reads "#: arrival number. S: severity. R: record number, the key in the archive."
+
+**Admit patient** (`admit-priority` with `variants: ["priority"]`, `admit-arrival` with `variants: ["arrival"]`; `inputKind: "array"`, placeholder "Severity, record: e.g. 5, 50")
+
+```
+1  ADMIT(severity, record):
+2    if archive.get(record) is null: archive.put(record)
+3    p = new Patient(nextArrival, severity, record)
+4    pq.insert(p)
+5  SWIM(k):
+6    while k > 1 and pq[k] is more urgent than pq[k / 2]:
+7      exchange pq[k] and pq[k / 2]; k = k / 2
+```
+
+The arrival listing is lines 1 to 3 and `4    queue.enqueue(p)`.
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Input is not two numbers, severity 1 to 5, record 1 to 999 | 1 | "Enter a severity from 1 to 5 and a record number, such as 5, 50." | triage |
+| 15 already waiting | 1 | "15 patients are already waiting, so treat someone first." | triage |
+| Record belongs to a waiting patient | 1 | "Record `{record}` belongs to #`{b}`, who is still waiting." | triage, that patient `treat` |
+| Archive lookup | 2 | the Section 10.12 get steps, unchanged | archive |
+| Record missing | 2 | "Record `{record}` is new, so the desk adds it to the archive." | archive |
+| Heap: place | 4 | "Patient #`{a}` (severity `{s}`, record `{record}`) takes position `{k}` at the end of the heap." | triage, `new` |
+| Heap: compare | 6 | "Comparing #`{a}` (severity `{s}`) with its parent #`{b}` (severity `{t}`)." | triage, `compare` |
+| Heap: swim | 7 | "#`{a}` is more urgent than #`{b}`, so it swims up." | triage, `swap` |
+| Heap: stop below the root | 6 | "Heap order holds: #`{b}` stays above #`{a}`." | triage |
+| Heap: reaches the root | 6 | "#`{a}` reaches the root: the next patient to treat." | triage |
+| Queue: join | 4 | "Patient #`{a}` (severity `{s}`, record `{record}`) joins the back of the queue at position `{i}`." | triage, `new` |
+
+**Treat next** (`treat-priority`, `treat-arrival`; `inputKind: "none"`)
+
+```
+1  TREAT_NEXT():
+2    if pq is empty: return
+3    p = pq[1]; move pq[n] to pq[1]; n = n - 1
+4    SINK(1)
+5  SINK(k):
+6    while 2k <= n:
+7      j = the more urgent child of k
+8      if pq[k] is at least as urgent as pq[j]: stop
+9      exchange pq[k] and pq[j]; k = j
+```
+
+The arrival listing is:
+
+```
+1  TREAT_NEXT():
+2    if queue is empty: return
+3    p = queue.dequeue()
+4    if someone still waiting is more urgent than p: bypassed = bypassed + 1
+```
+
+| Trigger | Line | Description | Focus |
+|---|---|---|---|
+| Nobody waiting (both) | 2 | "Nobody is waiting, so there is nobody to treat." | triage |
+| Heap: before treatment | 3 | "#`{a}` (severity `{s}`) is at the root: the most urgent patient waiting." Heap unchanged. | triage, root `treat` |
+| Heap: take the root, others remain | 3 | "Treating #`{a}` (severity `{s}`), the most urgent patient. #`{last}` (severity `{t}`) moves to the root." | triage, root `new` |
+| Heap: take the last patient | 3 | "Treating #`{a}` (severity `{s}`). Nobody else is waiting." | triage |
+| Heap: two children, severities differ | 7 | "Comparing the children #`{x}` (severity `{sx}`) and #`{y}` (severity `{sy}`): #`{w}` is more urgent, since `{sw}` > `{sl}`." | triage, `compare` |
+| Heap: two children, same severity | 7 | "Comparing the children #`{x}` (severity `{s}`) and #`{y}` (severity `{s}`): both have severity `{s}`, so #`{w}`, who arrived earlier, is more urgent." | triage, `compare` |
+| Heap: one child | 7 | "#`{x}` (severity `{sx}`) is the only child." | triage, `compare` |
+| Heap: stop, severities differ | 8 | "#`{a}` (severity `{s}`) is more urgent than #`{j}` (severity `{t}`), so heap order holds." | triage, `compare` on both |
+| Heap: stop, same severity | 8 | "#`{a}` and #`{j}` both have severity `{s}`, and #`{a}` arrived earlier, so heap order holds." | triage, `compare` on both |
+| Heap: sink, severities differ | 9 | "#`{j}` (severity `{t}`) is more urgent than #`{a}` (severity `{s}`), so #`{a}` sinks down." | triage, `swap` |
+| Heap: sink, same severity | 9 | "#`{j}` and #`{a}` both have severity `{s}`, and #`{j}` arrived earlier, so #`{a}` sinks down." | triage, `swap` |
+| Heap: no children left | 6 | "#`{a}` has no children, so heap order holds." | triage |
+| Queue: before treatment | 3 | "#`{a}` (severity `{s}`) is at the front of the queue." Queue unchanged. | triage, front `treat` |
+| Queue: treat | 3 | "Treating #`{a}` (severity `{s}`), who arrived first." | triage, `treat` |
+| Queue: bypass | 4 | "#`{u}` (severity `{t}`) is more urgent and still waiting: bypassed is now `{k}`." | triage, `u` marked |
+| Queue: no bypass | 4 | "Nobody still waiting is more urgent than #`{a}`." | triage |
+
+`bypassed` never changes in priority mode, since the root is always the most urgent patient.
+
+**Find record** (`find-record`, both variants, `inputKind: "key"`)
+
+```
+1  FIND_RECORD(record):
+2    node = root
+3    for each level above the leaves:
+4      node = the child whose range holds record
+5    search the leaf for record
+```
+
+The Section 10.12 get steps run unchanged with their lines mapped (descend to 4, leaf compare and HIT or MISS to 5), then one summary step on line 5: "Record `{record}` found after `{k}` block reads." or "Record `{record}` is not in the archive: `{k}` block reads." (`1 block read`). `variables` carries `block reads`.
+
+**Live fields:** `waiting`, `treated`, `bypassed`, `records`, `height`.
+
+### 19.3 Canteen order counter, `/case-study/canteen-orders` (Weeks 1–7)
+
+**Scenario.** A campus canteen has one counter. Each order gets the next number, starting at 101, and waits until the kitchen serves it. Served orders go into a log for the day, and a student at the pickup shelf asks whether their number has been served.
+
+**Variant:** `design: "queue" | "stack"` (default `"queue"`), labeled Queue and Stack. The naive counter keeps waiting orders on a stack, so the newest order is served first; its log is then out of number order and has to be scanned from the start.
+
+**State & snapshot**
+
+```ts
+interface CanteenSnapshot {
+  design: "queue" | "stack";
+  nodes: Record<string, LinkedNode>;   // lib/linked-nodes, value = order number
+  firstId: string | null;              // front of the queue, or top of the stack
+  lastId: string | null;               // back of the queue; null for the stack
+  nextId: number;
+  log: (number | null)[];              // resizing array, capacity = log.length, starts at 2
+  n: number;                           // orders in the log
+  nextOrder: number;
+  skipped: number;                     // orders served while an older order waited
+  highlight?: { ids?: string[]; indices?: number[]; kind: "new" | "current" | "found" | "write" | "copy" };
+  range?: { lo: number; hi: number };  // the live binary search window
+}
+```
+
+At most 12 orders wait at once, and the day takes at most 32 orders. The seed runs place, place, place, serve, serve, place, serve, place, place on each design: the queue ends with log 101, 102, 103 (capacity 4) and 104, 105, 106 waiting; the stack ends with log 103, 102, 104 and 106, 105, 101 waiting (106 on top), `skipped = 3`. Randomize runs 14 to 20 random place and serve actions from an empty counter.
+
+**Canvas.** Two labeled rows: the waiting orders as a `LinkedRow` (`first` and `last` pointers for the queue, `top` for the stack) and the served log as an `ArrayRow` with `lo`, `mid`, and `hi` pointers during a binary search.
+
+**Place order** (`place-queue`, `place-stack`; `inputKind: "none"`)
+
+```
+1  PLACE_ORDER():
+2    number = nextOrder; nextOrder = nextOrder + 1
+3    pending.enqueue(number)
+```
+
+The stack listing ends with `3    pending.push(number)`.
+
+| Trigger | Line | Description | Highlight |
+|---|---|---|---|
+| 12 waiting | 3 | "12 orders are already waiting, so serve one before taking another." | none |
+| 32 orders today | 2 | "The counter has taken 32 orders today, the most this log keeps." | none |
+| Number | 2 | "The counter gives the new order number `{num}`." | none |
+| Queue, not empty | 3 | "Order `{num}` joins the back of the queue after order `{last}`." | `new` |
+| Stack, not empty | 3 | "Order `{num}` goes on top of the stack, above order `{top}`." | `new` |
+| Empty | 3 | "Nothing was waiting, so order `{num}` is the only order waiting." | `new` |
+
+**Serve next** (`serve-queue`, `serve-stack`; `inputKind: "none"`)
+
+```
+1  SERVE_NEXT():
+2    if pending is empty: return
+3    number = pending.dequeue()
+4    if n == log.length: resize the log to 2 * log.length
+5    log[n] = number; n = n + 1
+```
+
+The stack listing reads `3    number = pending.pop()`.
+
+| Trigger | Line | Description | Highlight |
+|---|---|---|---|
+| Nothing waiting | 2 | "No orders are waiting, so there is nothing to serve." | none |
+| Queue, before serving | 3 | "Order `{num}` is at the front of the queue." The order is still linked. | `current` on it |
+| Stack, before serving | 3 | "Order `{num}` is on top of the stack." The order is still linked. | `current` on it |
+| Queue | 3 | "Order `{num}` is first in the queue, so the kitchen serves it." | none |
+| Stack, no older order waiting | 3 | "Order `{num}` is on top of the stack, so the kitchen serves it." | none |
+| Stack, older orders waiting | 3 | "Order `{num}` is on top of the stack, so the kitchen serves it before `{k}` older orders." | none |
+| Log full | 4 | "The served log is full at `{cap}` slots, so it doubles to `{2cap}`." | every slot `copy` |
+| Write | 5 | "Writing order `{num}` at position `{i}` of the served log." | `write` |
+
+**Find order, binary search** (`find-binary`, `variants: ["queue"]`, `inputKind: "key"`, placeholder "Order number, e.g. 104")
+
+```
+1  FIND_ORDER(number):
+2    lo = 0; hi = n - 1
+3    while lo <= hi:
+4      mid = (lo + hi) / 2
+5      if number < log[mid]: hi = mid - 1
+6      else if number > log[mid]: lo = mid + 1
+7      else: return mid
+8    return NOT_SERVED
+```
+
+| Trigger | Line | Description | Highlight |
+|---|---|---|---|
+| Probe | 4 | "lo = `{lo}`, hi = `{hi}`, so mid = `{mid}`: order `{log[mid]}`." | `current`, range |
+| Smaller | 5 | "`{num}` < `{log[mid]}`, so search the left half." | range |
+| Larger | 6 | "`{num}` > `{log[mid]}`, so search the right half." | range |
+| Found | 7 | "Found order `{num}` at position `{mid}` after `{c}` compares." | `found` |
+| Not found | 8 | "lo is past hi after `{c}` compares: order `{num}` is not in the served log." | none |
+
+**Find order, sequential search** (`find-sequential`, `variants: ["stack"]`, `inputKind: "key"`)
+
+```
+1  FIND_ORDER(number):
+2    for i = 0 to n - 1:
+3      if log[i] == number: return i
+4    return NOT_SERVED
+```
+
+| Trigger | Line | Description | Highlight |
+|---|---|---|---|
+| Compare | 3 | "Comparing `{num}` with order `{log[i]}` at position `{i}`." | `current` |
+| Found | 3 | "Found order `{num}` at position `{i}` after `{c}` compares." | `found` |
+| Not found | 4 | "Reached the end of the log after `{c}` compares: order `{num}` is not in it." | none |
+
+Compare counts pluralize (`1 compare`). `variables.compares` carries the running count.
+
+**Live fields:** `waiting`, `served`, `cap`, `next`, `skipped`.
