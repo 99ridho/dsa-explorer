@@ -88,7 +88,7 @@ export function OperationBar({
               <Input
                 id={inputId}
                 className={inputKind === 'text' ? 'min-w-56 flex-1 font-mono' : 'min-w-28 flex-1 font-mono'}
-                inputMode={inputKind === 'edge' || inputKind === 'text' ? 'text' : 'numeric'}
+                inputMode={'text'}
                 placeholder={current?.placeholder ?? INPUT_PLACEHOLDER[inputKind]}
                 value={inputText}
                 onChange={(e) => onInputChange(e.target.value)}
