@@ -32,8 +32,8 @@ export function BTreeCanvas({ snapshot }: { snapshot: BTreeSnapshot; variant?: s
   return (
     <svg
       viewBox={`${minX} ${-PAD} ${width} ${height}`}
-      className="h-auto w-full"
-      style={{ maxHeight: 300 }}
+      className="w-full"
+      style={{ height: 300 }}
       role="img"
       aria-label={`B-tree with ${snapshot.n} keys, height ${snapshot.height}`}
     >

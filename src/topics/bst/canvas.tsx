@@ -48,8 +48,8 @@ export function TreeCanvas({ snapshot }: { snapshot: BSTSnapshot }) {
   return (
     <svg
       viewBox={`${minX} ${minY} ${width} ${height}`}
-      className="h-auto w-full"
-      style={{ maxHeight: 260 }}
+      className="w-full"
+      style={{ height: 260 }}
       role="img"
       aria-label={`Binary search tree with ${nodes.length} nodes`}
     >

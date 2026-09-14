@@ -1,0 +1,40 @@
+// Shared by snippets.test.ts and structure.test.ts so both drive the same branches.
+/**
+ * Inputs that drive each operation through its interesting branches on the seed state.
+ * Every input runs on the fresh seed, so branches that need a prior state (a halving pop, a
+ * second push that resizes, a B-tree root split) are covered by each topic's own test file.
+ */
+export const INPUTS: Record<string, unknown[]> = {
+  'complexity/count-accesses': [16, 12, 0, 5000],
+  'arrays/create': [[1, 2, 3], Array.from({ length: 17 }, () => 0)],
+  'arrays/access': [2, 9],
+  'arrays/set': [[2, 7], [2]],
+  'queue/array-enqueue': [7],
+  'queue/linked-enqueue': [7],
+  'stack/array-push': [7],
+  'stack/linked-push': [7],
+  'stack/evaluate': ['( 1 + ( ( 2 + 3 ) * ( 4 * 5 ) ) )', '( 1 + x )', '( 1 / 0 )', '( 1 )'],
+  'linked-list/insert-first': [3],
+  'linked-list/insert-last': [3],
+  'sorting/load': [[5, 3, 8], [1]],
+  'searching/seq-get': [5, 99],
+  'searching/seq-put': [5, 99],
+  'searching/bin-get': [21, 22, 99],
+  'searching/bin-put': [21, 22],
+  'bst/insert': [45, 50],
+  'b-tree/get': [60, 25],
+  'b-tree/put': [40, 80, 50, 10],
+  'bst/search': [60, 99],
+  'bst/delete': [20, 30, 99],
+  'binary-heap/insert': [85],
+  'binary-heap/build-heap': [[5, 3, 8, 1, 9]],
+  'hash-table/chain-insert': [56, 34],
+  'hash-table/chain-search': [45, 67],
+  'hash-table/chain-delete': [23, 67],
+  'hash-table/probe-insert': [56, 12],
+  'hash-table/probe-search': [45, 67],
+  'hash-table/probe-delete': [23, 67],
+  'graph/add-edge': [{ from: '4', to: '5' }, { from: '2', to: '2' }, { from: '0', to: '1' }],
+  'graph/bfs': [0, 9],
+  'graph/dfs': [0, 9],
+}

@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { bstOperations, buildTree } from './operations'
 import { bstPseudocode } from './pseudocode'
 import { bstSnippets } from './snippets'
+import { bstStructure } from './structure'
 import type { BSTSnapshot, BSTState } from './types'
 
 /** Fixed seed tree so the page is usable before Randomize; Reset returns to it. */
@@ -25,6 +26,7 @@ export const bst: TopicModule<BSTState, BSTSnapshot> = {
   snippets: bstSnippets,
   CanvasComponent: TreeCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: bstStructure,
   createInitialState: () => buildTree(SEED_KEYS),
   randomize: () => buildTree(randomKeys()),
 }

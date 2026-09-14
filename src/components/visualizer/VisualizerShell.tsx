@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { usePlayback } from '@/lib/step-engine'
 import type { Step, TopicModule } from '@/types/step-engine'
 import { CodePanel } from './CodePanel'
+import { LiveFields } from './LiveFields'
 import { OperationBar } from './OperationBar'
 import { PlaybackControls } from './PlaybackControls'
 import { parseInput } from './input-parsing'
@@ -12,7 +13,13 @@ const NO_STEPS: Step<unknown>[] = []
 
 // v1 contract: every topic defines TState = TSnapshot (SPEC.md §10), so an operation's
 // finalSnapshot becomes the next persistent state.
-export function VisualizerShell({ topic }: { topic: TopicModule }) {
+interface VisualizerShellProps {
+  topic: TopicModule
+  // The page mirrors the variant for the Structure panel; the shell still owns it and its resets.
+  onVariantChange?: (value: string) => void
+}
+
+export function VisualizerShell({ topic, onVariantChange }: VisualizerShellProps) {
   const [variant, setVariant] = useState<string | undefined>(topic.variant?.default)
   const [state, setState] = useState<unknown>(() => topic.createInitialState(topic.variant?.default))
   const [steps, setSteps] = useState<Step<unknown>[]>(NO_STEPS)
@@ -59,6 +66,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
     setSteps(NO_STEPS)
     setCurrentOperationId(null)
     setInputError(null)
+    onVariantChange?.(value)
   }
 
   // Keyboard playback (§12): Space play/pause, ←/→ step: ignored while typing in a field.
@@ -94,6 +102,7 @@ export function VisualizerShell({ topic }: { topic: TopicModule }) {
       <Card className="min-w-0 md:col-span-2">
         <CardContent>
           <Canvas snapshot={displayedSnapshot} variant={variant} />
+          <LiveFields structure={topic.structure} snapshot={displayedSnapshot} variant={variant} />
         </CardContent>
       </Card>
 

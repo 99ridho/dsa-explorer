@@ -55,8 +55,8 @@ export function HeapCanvas({ snapshot }: { snapshot: HeapSnapshot }) {
       {n >= 1 ? (
         <svg
           viewBox={`${minX} ${minY} ${maxX - minX} ${maxY - minY}`}
-          className="h-auto w-full"
-          style={{ maxHeight: 200 }}
+          className="w-full"
+          style={{ height: 200 }}
           role="img"
           aria-label={`${snapshot.mode === 'max' ? 'Max' : 'Min'} heap with ${n} elements`}
         >
@@ -98,7 +98,10 @@ export function HeapCanvas({ snapshot }: { snapshot: HeapSnapshot }) {
           </AnimatePresence>
         </svg>
       ) : (
-        <p className="text-center text-sm text-muted-foreground">The heap is empty. The array below is fully sorted.</p>
+        // Same height as the tree, so the last step of heapsort does not shrink the card and move the page (§12).
+        <p className="flex items-center justify-center text-center text-sm text-muted-foreground" style={{ height: 200 }}>
+          The heap is empty. The array below is fully sorted.
+        </p>
       )}
 
       <div className="overflow-x-auto">

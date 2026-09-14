@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildChaining, buildProbing, hashTableOperations } from './operations'
 import { hashTablePseudocode } from './pseudocode'
 import { hashTableSnippets } from './snippets'
+import { hashTableStructure } from './structure'
 import type { HashStrategy, HashTableSnapshot, HashTableState } from './types'
 
 const asStrategy = (v?: string): HashStrategy => (v === 'probing' ? 'probing' : 'chaining')
@@ -30,6 +31,7 @@ export const hashTable: TopicModule<HashTableState, HashTableSnapshot> = {
   snippets: hashTableSnippets,
   CanvasComponent: HashTableCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: hashTableStructure,
   variant: {
     id: 'strategy',
     label: 'Collision strategy',

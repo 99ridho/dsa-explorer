@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildGraph, graphOperations } from './operations'
 import { graphPseudocode } from './pseudocode'
 import { graphSnippets } from './snippets'
+import { graphStructure } from './structure'
 import type { GraphSnapshot, GraphState } from './types'
 
 const isDirected = (v?: string) => v === 'directed'
@@ -42,6 +43,7 @@ export const graph: TopicModule<GraphState, GraphSnapshot> = {
   snippets: graphSnippets,
   CanvasComponent: GraphCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: graphStructure,
   variant: {
     id: 'directed',
     label: 'Graph type',

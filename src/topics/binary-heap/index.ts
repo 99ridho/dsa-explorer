@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildHeap, heapOperations } from './operations'
 import { heapPseudocode } from './pseudocode'
 import { heapSnippets } from './snippets'
+import { heapStructure } from './structure'
 import type { HeapMode, HeapSnapshot, HeapState } from './types'
 
 const asMode = (v?: string): HeapMode => (v === 'min' ? 'min' : 'max')
@@ -30,6 +31,7 @@ export const binaryHeap: TopicModule<HeapState, HeapSnapshot> = {
   snippets: heapSnippets,
   CanvasComponent: HeapCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: heapStructure,
   variant: {
     id: 'mode',
     label: 'Heap order',

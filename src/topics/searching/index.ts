@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildBinary, buildSequential, searchingOperations } from './operations'
 import { searchingPseudocode } from './pseudocode'
 import { searchingSnippets } from './snippets'
+import { searchingStructure } from './structure'
 import type { SearchingImpl, SearchingSnapshot, SearchingState } from './types'
 
 const asImpl = (v?: string): SearchingImpl => (v === 'binary' ? 'binary' : 'sequential')
@@ -36,6 +37,7 @@ export const searching: TopicModule<SearchingState, SearchingSnapshot> = {
   snippets: searchingSnippets,
   CanvasComponent: SearchingCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: searchingStructure,
   variant: {
     id: 'impl',
     label: 'Implementation',

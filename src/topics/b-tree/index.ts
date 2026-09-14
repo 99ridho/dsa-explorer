@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { bTreeOperations, buildTree } from './operations'
 import { bTreePseudocode } from './pseudocode'
 import { bTreeSnippets } from './snippets'
+import { bTreeStructure } from './structure'
 import type { BTreeSnapshot, BTreeState } from './types'
 
 /** Root guides 20, 50 over two leaves, so the first leaf split fits in the root and the next one splits the root. */
@@ -25,6 +26,7 @@ export const bTree: TopicModule<BTreeState, BTreeSnapshot> = {
   snippets: bTreeSnippets,
   CanvasComponent: BTreeCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: bTreeStructure,
   createInitialState: () => buildTree(SEED_KEYS),
   randomize: () => buildTree(randomKeys()),
 }

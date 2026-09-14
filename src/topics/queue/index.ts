@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildArrayQueue, buildLinkedQueue, queueOperations } from './operations'
 import { queuePseudocode } from './pseudocode'
 import { queueSnippets } from './snippets'
+import { queueStructure } from './structure'
 import type { QueueImpl, QueueSnapshot, QueueState } from './types'
 
 const asImpl = (v?: string): QueueImpl => (v === 'linked' ? 'linked' : 'array')
@@ -32,6 +33,7 @@ export const queue: TopicModule<QueueState, QueueSnapshot> = {
   snippets: queueSnippets,
   CanvasComponent: QueueCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: queueStructure,
   variant: {
     id: 'impl',
     label: 'Implementation',

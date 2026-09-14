@@ -1,16 +1,27 @@
-// SPEC.md §6: generic topic page: visualizer (left, sticky) beside the course materials (right, tabbed).
+// SPEC.md §6: generic topic page: visualizer (left) beside the course materials (right, tabbed).
+import { useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { MarkdownContent } from '@/components/MarkdownContent'
+import { StructurePanel } from '@/components/StructurePanel'
 import { VisualizerShell } from '@/components/visualizer/VisualizerShell'
 import { getTopic } from '@/topics/registry'
+import type { TopicModule } from '@/types/step-engine'
 
 export function TopicPage() {
   const { slug } = useParams()
   const topic = getTopic(slug)
 
   if (!topic) return <Navigate to="/" replace />
+
+  // key={slug} guarantees a fresh visualizer, tab selection, and variant when navigating between topics.
+  return <TopicView key={topic.slug} topic={topic} />
+}
+
+function TopicView({ topic }: { topic: TopicModule }) {
+  // Mirror of the shell's variant, so the Structure tab can mark the representation on the canvas.
+  const [variant, setVariant] = useState<string | undefined>(topic.variant?.default)
 
   return (
     // At lg the article is capped to the viewport, so the page never scrolls; the Code
@@ -30,12 +41,11 @@ export function TopicPage() {
           <h2 id="visualizer" className="sr-only">
             Visualizer
           </h2>
-          {/* key={slug} guarantees a fresh state when navigating between topics */}
-          <VisualizerShell key={topic.slug} topic={topic} />
+          <VisualizerShell topic={topic} onVariantChange={setVariant} />
         </section>
 
         <section aria-label="Course materials" className="min-w-0 lg:flex lg:min-h-0 lg:flex-col">
-          <Tabs key={topic.slug} defaultValue="usage" className="lg:min-h-0 lg:flex-1">
+          <Tabs defaultValue="usage" className="lg:min-h-0 lg:flex-1">
             <TabsList className="w-full">
               <TabsTrigger value="usage" className="flex-1">
                 Real-World Usage
@@ -43,12 +53,23 @@ export function TopicPage() {
               <TabsTrigger value="core" className="flex-1">
                 Core Material
               </TabsTrigger>
+              <TabsTrigger value="structure" className="flex-1">
+                Structure
+              </TabsTrigger>
             </TabsList>
             <TabsContent value="usage" className="lg:min-h-0 lg:overflow-y-auto lg:pr-2">
               <MarkdownContent markdown={topic.content.realWorldUsage} />
             </TabsContent>
             <TabsContent value="core" className="lg:min-h-0 lg:overflow-y-auto lg:pr-2">
               <MarkdownContent markdown={topic.content.coreMaterial} />
+            </TabsContent>
+            <TabsContent value="structure" className="lg:min-h-0 lg:overflow-y-auto lg:pr-2">
+              <StructurePanel
+                structure={topic.structure}
+                variant={variant}
+                variantConfig={topic.variant}
+                operations={topic.operations}
+              />
             </TabsContent>
           </Tabs>
         </section>

@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildList, linkedListOperations } from './operations'
 import { linkedListPseudocode } from './pseudocode'
 import { linkedListSnippets } from './snippets'
+import { linkedListStructure } from './structure'
 import type { LinkedListSnapshot, LinkedListState } from './types'
 
 const SEED_VALUES = [4, 8, 15, 16]
@@ -24,6 +25,7 @@ export const linkedList: TopicModule<LinkedListState, LinkedListSnapshot> = {
   snippets: linkedListSnippets,
   CanvasComponent: LinkedListCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: linkedListStructure,
   createInitialState: () => buildList(SEED_VALUES),
   randomize: () => buildList(randomValues()),
 }

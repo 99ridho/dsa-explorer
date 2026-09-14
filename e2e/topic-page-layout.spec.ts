@@ -7,6 +7,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test'
 const LISTING = 'ol[aria-label]'
 const ACTIVE_PANEL = 'section[aria-label="Course materials"] [role="tabpanel"][data-state="active"]'
 const VISUALIZER_COLUMN = 'section[aria-labelledby="visualizer"]'
+const LIVE_FIELDS = '[aria-label="Instance fields"]'
 
 function card(page: Page, title: string): Locator {
   return page.locator('[data-slot="card"]', { has: page.locator('[data-slot="card-title"]', { hasText: title }) })
@@ -121,6 +122,30 @@ test.describe('desktop (lg)', () => {
     await page.keyboard.press('ArrowDown')
     await expect.poll(() => listing.evaluate((el) => el.scrollTop)).toBeGreaterThan(0)
   })
+
+  test('the Structure tab scrolls in place and marks the representation on the canvas', async ({ page }) => {
+    await page.goto('/topic/stack')
+    await expect(card(page, 'Operation')).toBeVisible()
+    await page.getByRole('tab', { name: 'Structure' }).click()
+    const doc = await documentScroll(page)
+    expect(doc.scrollHeight).toBe(doc.clientHeight)
+    expect(await page.locator(ACTIVE_PANEL).evaluate((el) => getComputedStyle(el).overflowY)).toBe('auto')
+    await expect(page.locator(LIVE_FIELDS)).toContainText('n = 3')
+    await expect(page.locator('[data-representation="array"]')).toContainText('on the canvas')
+    await page.getByRole('tab', { name: 'Linked list' }).click()
+    await expect(page.locator(LIVE_FIELDS)).toContainText(/first = n\d+/)
+    await expect(page.locator('[data-representation="linked"]')).toContainText('on the canvas')
+    await expect(page.locator('[data-representation="array"]')).not.toContainText('on the canvas')
+  })
+
+  test('the instance fields follow the step being shown', async ({ page }) => {
+    await openOperation(page, 'queue', /enqueue/i)
+    await page.getByRole('textbox').fill('42')
+    const chip = page.locator(`${LIVE_FIELDS} [role="listitem"]`).filter({ hasText: /^n = / })
+    const before = await chip.textContent()
+    await stepThrough(page, async () => {})
+    expect(await chip.textContent()).not.toBe(before)
+  })
 })
 
 test.describe('tablet (md)', () => {
@@ -170,5 +195,13 @@ test.describe('phone', () => {
       baseline ??= scrollY
       expect(scrollY).toBe(baseline)
     })
+  })
+
+  test('the Structure tab fits the width', async ({ page }) => {
+    await page.goto('/topic/hash-table')
+    await expect(card(page, 'Operation')).toBeVisible()
+    await page.getByRole('tab', { name: 'Structure' }).click()
+    await expect(page.locator(ACTIVE_PANEL)).toContainText('Separate chaining')
+    expect((await documentScroll(page)).scrollWidth).toBe(400)
   })
 })

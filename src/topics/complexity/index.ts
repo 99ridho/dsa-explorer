@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildRows, complexityOperations } from './operations'
 import { complexityPseudocode } from './pseudocode'
 import { complexitySnippets } from './snippets'
+import { complexityStructure } from './structure'
 import type { ComplexitySnapshot, ComplexityState, Problem } from './types'
 
 const asProblem = (v?: string): Problem => (v === '1-sum' || v === '2-sum' ? v : '3-sum')
@@ -19,6 +20,7 @@ export const complexity: TopicModule<ComplexityState, ComplexitySnapshot> = {
   snippets: complexitySnippets,
   CanvasComponent: ComplexityCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: complexityStructure,
   variant: {
     id: 'problem',
     label: 'Problem',

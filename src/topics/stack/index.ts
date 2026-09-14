@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildArrayStack, buildLinkedStack, stackOperations } from './operations'
 import { stackPseudocode } from './pseudocode'
 import { stackSnippets } from './snippets'
+import { stackStructure } from './structure'
 import type { StackImpl, StackSnapshot, StackState } from './types'
 
 const asImpl = (v?: string): StackImpl => (v === 'linked' ? 'linked' : 'array')
@@ -31,6 +32,7 @@ export const stack: TopicModule<StackState, StackSnapshot> = {
   snippets: stackSnippets,
   CanvasComponent: StackCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: stackStructure,
   variant: {
     id: 'impl',
     label: 'Implementation',

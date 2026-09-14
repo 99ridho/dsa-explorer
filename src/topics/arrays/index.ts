@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { arraysOperations, buildArray } from './operations'
 import { arraysPseudocode } from './pseudocode'
 import { arraysSnippets } from './snippets'
+import { arraysStructure } from './structure'
 import type { ArraysSnapshot, ArraysState } from './types'
 
 const SEED_VALUES = [5, 3, 8, 1, 9, 2]
@@ -22,6 +23,7 @@ export const arrays: TopicModule<ArraysState, ArraysSnapshot> = {
   snippets: arraysSnippets,
   CanvasComponent: ArraysCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: arraysStructure,
   createInitialState: () => buildArray(SEED_VALUES),
   randomize: () => buildArray(randomValues()),
 }

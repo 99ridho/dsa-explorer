@@ -57,7 +57,9 @@ dsa-explorer/
 │   │   │   ├── VisualizerShell.tsx   # composes OperationBar + Canvas + CodePanel + PlaybackControls
 │   │   │   ├── OperationBar.tsx      # operation select, key input, Go/Randomize/Reset
 │   │   │   ├── PlaybackControls.tsx  # play/pause/step/speed/scrub
-│   │   │   └── CodePanel.tsx         # pseudocode with highlighted line
+│   │   │   ├── CodePanel.tsx         # pseudocode with highlighted line
+│   │   │   └── LiveFields.tsx        # the structure's instance fields for the snapshot on the canvas
+│   │   ├── StructurePanel.tsx        # the Structure tab: ADT table, invariants, representations
 │   │   └── ui/                       # shadcn generated components
 │   ├── topics/
 │   │   ├── registry.ts               # TopicModule[], single source of truth for nav + routes
@@ -67,6 +69,7 @@ dsa-explorer/
 │   │   │   ├── canvas.tsx            # TreeCanvas
 │   │   │   ├── pseudocode.ts
 │   │   │   ├── snippets.ts           # C++ / Java / Python per operation, mapped to pseudocode lines
+│   │   │   ├── structure.ts          # ADT, representations, live fields (Section 7 `structure`)
 │   │   │   └── content.ts            # real-world usage + core material text
 │   │   ├── binary-heap/  (same shape)
 │   │   ├── hash-table/   (same shape)
@@ -116,7 +119,7 @@ Topic-slug routes are canonical. Week is metadata shown in the sidebar and on th
 | `/topic/hash-table` | `TopicPage` for Hash Table (Week 12) |
 | `/topic/graph` | `TopicPage` for Graph (Weeks 13–15) |
 
-`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial`. At `lg` and up the page is locked to the viewport: the document never scrolls, and only two regions do, the Code listing inside the visualizer and the active materials panel. The title, canvas, Operation, Playback, and both tab strips stay where they are while a student reads or steps. If the viewport is too short for the canvas plus Operation plus Playback, the visualizer column scrolls as a fallback. Below `lg` the columns stack, visualizer first, and the document scrolls normally. CPMK is deliberately omitted; refer students to the RPS for that.
+`TopicPage` is generic: it looks up the current topic from `registry.ts` by the `:slug` param and renders a two-column layout on desktop: `VisualizerShell` in the left column and the course materials in the right column as tabs, `content.realWorldUsage` (default) | `content.coreMaterial` | Structure (`StructurePanel` over `structure`, marking the representation on the canvas). The page mirrors the shell's variant through `onVariantChange` so the Structure tab follows the Operation card's toggle. At `lg` and up the page is locked to the viewport: the document never scrolls, and only two regions do, the Code listing inside the visualizer and the active materials panel. The title, canvas, Operation, Playback, and both tab strips stay where they are while a student reads or steps. If the viewport is too short for the canvas plus Operation plus Playback, the visualizer column scrolls as a fallback. Below `lg` the columns stack, visualizer first, and the document scrolls normally. CPMK is deliberately omitted; refer students to the RPS for that.
 
 ## 7. Core Domain Types
 
@@ -166,6 +169,39 @@ export interface SnippetLine {
 
 export type OperationSnippets = Record<SnippetLanguage, SnippetLine[]>;
 
+export interface AdtOperation {
+  name: string;                     // e.g. "push"
+  signature: string;                // e.g. "push(item)"
+  cost: string | Record<string, string>; // one cost, or one per representation key
+  note?: string;                    // one sentence, house style (Section 18)
+  operationIds?: string[];          // visualizer operations that demonstrate it (one per variant when scoped)
+}
+
+export interface StructureField {
+  name: string;                     // e.g. "first"
+  type: string;                     // e.g. "Node"
+  role: string;                     // e.g. "top of the stack, null when empty"
+}
+
+export interface Representation {
+  label: string;                    // e.g. "Resizing array"
+  declaration: string[];            // language-neutral pseudo-declaration, one line each
+  fields: StructureField[];
+  invariants?: string[];            // invariants this representation adds to the ADT's
+}
+
+export interface StructureSpec<TSnapshot = unknown> {
+  adt: {
+    name: string;                   // e.g. "Stack"
+    summary: string;                // one sentence; for algorithm topics it says there is no ADT to call
+    operations: AdtOperation[];     // empty for algorithm topics
+    invariants: string[];
+  };
+  representations: Record<string, Representation>; // key = variant value, or "default" alone when every variant shares one
+  algorithms?: string[];            // operation ids that run an algorithm over the structure rather than an ADT operation
+  liveFields: (snapshot: TSnapshot, variant?: string) => Record<string, string | number>; // scalars only, at most six
+}
+
 export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   slug: string;
   title: string;
@@ -175,6 +211,7 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
   snippets: Record<string, OperationSnippets>; // operationId -> C++ / Java / Python with a pseudocode line map
   CanvasComponent: React.ComponentType<{ snapshot: TSnapshot; variant?: string }>;
   content: { realWorldUsage: string; coreMaterial: string };
+  structure: StructureSpec<TSnapshot>; // ADT, representations, live instance fields (Section 8)
   variant?: VariantConfig;
   createInitialState: (variant?: string) => TState; // Reset uses the active variant
   randomize: (state: TState, variant?: string) => TState; // instant, no animation
@@ -183,13 +220,17 @@ export interface TopicModule<TState = unknown, TSnapshot = unknown> {
 
 `registry.ts` exports `const topics: TopicModule[]`, which drives both `AppSidebar` and `TopicPage`'s lookup. `VisualizerShell` shows only the operations whose `variants` include the active variant (or that declare none), and re-selects the first visible operation when the variant changes. **Adding a new topic later means adding one entry here, with no other file changes.**
 
+`structure` describes the data structure itself, beside the operations that animate it. `adt` is the abstract interface: each operation's signature, its cost (one string, or one per representation when the cost differs by variant), and the invariants every representation keeps. `representations` holds one entry per variant value (or `default` alone when every variant shares one representation, as the complexity topic's problem choice does) with a language-neutral declaration of the class and its node type, the fields, and the invariants that representation adds. `operationIds` links an ADT operation to the visualizer operations that demonstrate it; `algorithms` lists the operations that are algorithms over the structure rather than part of its interface (traversals, sorts, the two-stack evaluator). Every operation id of the module appears in exactly one of the two. `liveFields` reads the snapshot being shown and returns the instance fields as scalars (`n`, `first`, `root`, `M`), at most six, so the row under the canvas tracks every step. Costs quote the week reference (an `O(...)` form or the reference's own statement with its Property or Proposition name); a number the reference does not state is not shown.
+
 ## 8. Shared UI Components
 
 - **`AppSidebar`**: lists `topics` from the registry, grouped by week range, each item showing title + `weekLabel` badge. Built on shadcn `Sidebar`.
-- **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent`, `CodePanel`, and `PlaybackControls`. From `md` up it is a two-column grid: the canvas spans both columns, Operation and Playback stack in the left column at their own content height (never stretched to match Code), and Code fills the right column beside them. At `md` a short Code card stretches down to the bottom of Playback; at `lg` the Code card sizes to its listing and is capped at the column height, so its listing scrolls only past that point.
+- **`VisualizerShell`**: the reusable "app" per topic: owns the persistent `TState`, the `usePlayback` instance for the most recently triggered operation's steps, and composes `OperationBar`, the topic's `CanvasComponent` (with `LiveFields` under it in the same card), `CodePanel`, and `PlaybackControls`. It reports a variant change to its parent through `onVariantChange` and still owns the variant and its resets. From `md` up it is a two-column grid: the canvas spans both columns, Operation and Playback stack in the left column at their own content height (never stretched to match Code), and Code fills the right column beside them. At `md` a short Code card stretches down to the bottom of Playback; at `lg` the Code card sizes to its listing and is capped at the column height, so its listing scrolls only past that point.
 - **`OperationBar`**: operation `Select` (from `operations`), an `Input` sized to `inputKind` (`text` is a free-form field, used by Stack's Evaluate expression; an operation's `placeholder` overrides the per-kind default), a "Go" `Button`, a "Randomize" `Button`, a "Reset" `Button`, and (when `variant` is defined) a `Tabs` or `Select` bound to it.
 - **`CodePanel`**: shows `currentStep.description` (and `variables` as badges) above a numbered code block with a tab strip: **Pseudocode | C++ | Java | Python**. The Pseudocode tab renders `pseudocode[currentOperationId]` and highlights the line equal to `currentStep.highlightLine`; a language tab renders `snippets[currentOperationId][language]` and highlights every line whose `pseudo` equals it, so the highlight stays in sync in every tab. The chosen tab is remembered in `localStorage` (`dsa-explorer-code-lang`) across topics and reloads; the default is Pseudocode. **Lines never clip**: each line soft-wraps with a hanging indent (the line starts at its own indent, wrapped continuations sit two columns deeper), and the block has no horizontal scrolling at any width. At `lg` the listing is the only part of the panel that scrolls (the description and the tab strip stay put); it is keyboard focusable with a visible ring, and stepping keeps the highlighted line inside it by scrolling the listing itself, never the page.
 - **`PlaybackControls`**: play/pause toggle, step-back, step-forward, a `Slider` bound to `currentStepIndex` for scrubbing, and a speed `Slider` (ms-per-step).
+- **`LiveFields`**: one chip per entry of `structure.liveFields(snapshot, variant)` for the snapshot the canvas shows, in the badge style of `CodePanel`'s step variables, prefixed with the active representation's label. The chips sit in a grid whose column count depends on the width alone (fixed tracks), so the row keeps its height while values change and stepping never moves the page; every chip's `key = value` text fits one track (`src/topics/structure.test.ts` caps it at 14 characters).
+- **`StructurePanel`**: the Structure tab. The ADT name and summary, a table of the ADT operations (signature, note, "Shown by {operation label}" for the visible demonstrating operation, and the cost resolved for the active representation), the ADT invariants, then one block per representation in declared order: label, an "on the canvas" badge on the active one (or a cue naming the variant toggle on the others), the declaration with `CodePanel`'s hanging indent, the fields table, and the representation's own invariants. A closing list names the operations in `algorithms`. Structured JSX, because `MarkdownContent` renders no tables.
 
 ## 9. Step Engine: Playback Semantics
 
@@ -221,6 +262,8 @@ Rules:
 Each subsection gives: the snapshot shape, the canvas layout rule, and pseudocode + a step table per operation. The step table is the contract for `run()`: implement `run()` so it emits exactly these steps, in this order, for these trigger conditions.
 
 Every operation also ships a C++, Java, and Python implementation in the topic's `snippets.ts`, each line optionally mapped to the pseudocode line it implements (`SnippetLine.pseudo`). Java follows the algs4 shape (Sedgewick & Wayne: `less`/`exch`, `swim`/`sink`, `marked[]`/`edgeTo[]`, and so on); C++ and Python are direct translations, not idiomatic rewrites, so a student can read the three side by side. Contract: every pseudocode line a step can highlight must have at least one mapped line in each language; `src/topics/snippets.test.ts` runs every operation on its seed state and checks this. Comments inside snippets are prose and fall under Section 18.
+
+Every topic also ships a `structure.ts` (Section 7 `structure`): the ADT operations with signatures in the Java snippet's shape, costs quoted from the week reference, invariants, and one declaration per representation naming the class and node fields the snippets use. Algorithm topics (Sections 10.5 and 10.9) leave the operation table empty and say so in the summary. The B-tree entry follows Section 10.12 (a node holds up to `M` entries and splits at `M`), not the reference's `M - 1` phrasing. `src/topics/structure.test.ts` checks every module: one representation per variant value (or `default` alone), every operation id covered exactly once by `operationIds` or `algorithms`, scalar live fields on the seed and on every step of every seed operation, and the Section 18 floor on every string.
 
 ### 10.1 Binary Search Tree, `/topic/bst`
 
@@ -1290,11 +1333,11 @@ The reference files live in `references/` and `content.ts` is generated from the
 
 - All playback controls must be keyboard-operable (space to play/pause, arrow keys to step) and carry `aria-label`s, because students may navigate this without a mouse.
 - On narrow viewports, `VisualizerShell` stacks vertically: Canvas → OperationBar → CodePanel → PlaybackControls, rather than the desktop side-by-side layout.
-- Canvas SVGs should use `viewBox` scaling, not fixed pixel dimensions, so they scale down on mobile without clipping.
+- Canvas SVGs should use `viewBox` scaling, not fixed pixel dimensions, so they scale down on mobile without clipping. A tree canvas whose `viewBox` changes shape between steps (heap, BST, B-tree) renders at a fixed height, the cap it already had on wide viewports, so a narrowing tree does not grow the card and move the page while stepping; the heap's empty message takes the same height for the same reason.
 - Layout contract by width, checked by `e2e/topic-page-layout.spec.ts` (`npm run test:e2e`):
-  - `lg` and up: the document does not scroll; the Code listing and the active materials panel do. Scrolling either leaves every other element in place. The Code card sizes to a short listing instead of filling the column. Stepping through an operation keeps the highlighted line inside the listing and never moves the page. The listing is reachable with Tab, shows a focus ring, and scrolls with the arrow keys.
+  - `lg` and up: the document does not scroll; the Code listing and the active materials panel (Structure included) do. Scrolling either leaves every other element in place. Switching the variant moves the "on the canvas" badge to the matching representation block, and the live fields row changes while stepping. The Code card sizes to a short listing instead of filling the column. Stepping through an operation keeps the highlighted line inside the listing and never moves the page. The listing is reachable with Tab, shows a focus ring, and scrolls with the arrow keys.
   - `md` to `lg`: Operation and Playback keep their content height beside a tall Code card (Playback starts one grid gap below Operation); a short Code card ends level with the bottom of Playback.
-  - Phone: cards stack in DOM order, the document scrolls, nothing overflows sideways at 400px, and stepping does not move the page.
+  - Phone: cards stack in DOM order, the document scrolls, nothing overflows sideways at 400px (the three materials tabs and the Structure panel included), and stepping does not move the page. The live fields label sits above the chips below `sm`.
 
 ## 13. Deployment
 
@@ -1310,11 +1353,12 @@ Same pattern as the `dsa-online-judge` project:
 
 Every RPS week now has a topic (Sections 10.1 to 10.12). To add a further topic, or a second visualizer for a week that already has one:
 
-1. Create `src/topics/<slug>/` with the same files (`index.ts`, `types.ts`, `operations.ts`, `operations.test.ts`, `canvas.tsx`, `pseudocode.ts`, `snippets.ts`, `content.ts`). Row-shaped structures reuse `ArrayRow` and `LinkedRow` from `components/visualizer/canvas/` and the node helpers in `lib/linked-nodes.ts`; trees reuse `layoutBinaryTree` or `layoutMultiwayTree`.
+1. Create `src/topics/<slug>/` with the same files (`index.ts`, `types.ts`, `operations.ts`, `operations.test.ts`, `canvas.tsx`, `pseudocode.ts`, `snippets.ts`, `structure.ts`, `content.ts`). Row-shaped structures reuse `ArrayRow` and `LinkedRow` from `components/visualizer/canvas/` and the node helpers in `lib/linked-nodes.ts`; trees reuse `layoutBinaryTree` or `layoutMultiwayTree`.
 2. Define the topic's `TSnapshot` shape and canvas rendering rule.
 3. Write pseudocode + a step table per operation, in the same format as Section 10, then the three language snippets with their line map.
-4. Register the module in `topics/registry.ts`.
-5. No changes to `AppSidebar`, `TopicPage`, `VisualizerShell`, or the step engine are needed; they're all generic over `TopicModule`.
+4. Write `structure.ts` from the week reference and the Java snippet: the ADT table with costs the reference states, the invariants, one declaration per variant, and `liveFields` returning at most six scalars; `src/topics/structure.test.ts` checks it.
+5. Register the module in `topics/registry.ts`.
+6. No changes to `AppSidebar`, `TopicPage`, `VisualizerShell`, or the step engine are needed; they're all generic over `TopicModule`.
 
 ## 15. Roadmap: Expansion to the Full RPS
 
@@ -1348,6 +1392,7 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 - [ ] Hash Table's chaining/probing toggle and Graph's directed/undirected toggle each correctly swap canvas component and operation list.
 - [ ] Every Section 10.5 to 10.12 topic is registered in week order and passes its `operations.test.ts`; the `text` input rejects an empty expression with a visible error.
 - [ ] Real-world usage and core material content renders on each topic page, sourced from the four existing markdown files.
+- [ ] Every topic's Structure tab lists its ADT operations with costs and its representation, the badge follows the variant toggle, and the live fields row under the canvas tracks the step being shown.
 - [ ] Responsive layout verified at a mobile viewport width, and the Section 12 layout contract passes `npm run test:e2e` at desktop, tablet, and phone widths.
 - [ ] Builds to a static `dist/`, runs correctly in the production Docker image.
 

@@ -4,6 +4,7 @@ import { coreMaterial, realWorldUsage } from './content'
 import { buildArray, sortingOperations } from './operations'
 import { sortingPseudocode } from './pseudocode'
 import { sortingSnippets } from './snippets'
+import { sortingStructure } from './structure'
 import type { SortingSnapshot, SortingState } from './types'
 
 /** Nine items: shellsort picks h = 4 then 1, so both passes show. */
@@ -25,6 +26,7 @@ export const sorting: TopicModule<SortingState, SortingSnapshot> = {
   snippets: sortingSnippets,
   CanvasComponent: SortingCanvas,
   content: { realWorldUsage, coreMaterial },
+  structure: sortingStructure,
   createInitialState: () => buildArray(SEED_VALUES),
   randomize: () => buildArray(randomValues()),
 }
