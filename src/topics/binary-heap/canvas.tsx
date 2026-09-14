@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import type { HeapSnapshot } from './types'
 
 const NODE_R = 18
-const PAD = 28
+const PAD = 30
 
 type Kind = NonNullable<HeapSnapshot['highlight']>['kind']
 

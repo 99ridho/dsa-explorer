@@ -60,7 +60,7 @@ export function CodePanel({ lines, snippets, currentStep, operationLabel }: Code
 
   return (
     <div className="flex flex-col gap-3 lg:min-h-0 lg:flex-1">
-      <div className="min-h-12 rounded-lg bg-muted px-3 py-2 text-sm" aria-live="polite">
+      <div className="min-h-12 shrink-0 rounded-lg bg-muted px-3 py-2 text-sm" aria-live="polite">
         {currentStep ? (
           <>
             <p>{currentStep.description}</p>
@@ -83,7 +83,7 @@ export function CodePanel({ lines, snippets, currentStep, operationLabel }: Code
 
       {lines.length > 0 && (
         <>
-          <Tabs value={view} onValueChange={changeView}>
+          <Tabs value={view} onValueChange={changeView} className="shrink-0">
             <TabsList className="h-8 w-full">
               <TabsTrigger value="pseudocode" className="flex-1 text-xs">
                 Pseudocode
@@ -99,7 +99,7 @@ export function CodePanel({ lines, snippets, currentStep, operationLabel }: Code
           <ol
             ref={listRef}
             tabIndex={0}
-            className="relative rounded-lg border bg-card p-3 font-mono text-xs leading-5 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none lg:overflow-y-auto"
+            className="relative min-h-0 rounded-lg border bg-card p-3 font-mono text-xs leading-5 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none lg:overflow-y-auto"
             aria-label={view === 'pseudocode' ? 'Pseudocode' : `${LANGUAGE_LABEL[view]} code`}
           >
             {shown.map((line, i) => {

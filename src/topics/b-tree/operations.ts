@@ -6,7 +6,8 @@ import { BTREE_M, MAX_KEYS, nodeId, type BTreeHighlight, type BTreeSnapshot, typ
 
 export const ENTRY_W = 30
 export const ENTRY_H = 26
-const DETACHED_GAP = 24
+const V_GAP = 70
+const FOREST = '__forest'
 
 // ---------- snapshot helpers ----------
 
@@ -26,26 +27,38 @@ export function nodeWidth(entries: number): number {
 
 /** Recomputes x/y for every node from the current links. */
 export function withLayout(s: BTreeSnapshot): BTreeSnapshot {
+  const realChildren = (id: string) => s.nodes[id].entries.map((e) => e.childId).filter((c): c is string => c !== null)
+  const linked = new Set<string>()
+  const visit = (id: string) => {
+    linked.add(id)
+    realChildren(id).forEach(visit)
+  }
+  visit(s.rootId)
+
+  // A node that just split off is laid out as its origin's next sibling, with its subtree, until the parent links it.
+  const detachedAfter = new Map<string, string>()
+  for (const node of Object.values(s.nodes)) {
+    if (!linked.has(node.id) && node.splitFrom) detachedAfter.set(node.splitFrom, node.id)
+  }
+  const withDetached = (ids: string[]) => ids.flatMap((c) => (detachedAfter.has(c) ? [c, detachedAfter.get(c)!] : [c]))
+
+  const rootSplit = detachedAfter.has(s.rootId)
   const positions = layoutMultiwayTree(
-    s.rootId,
-    (id) => s.nodes[id].entries.map((e) => e.childId).filter((c): c is string => c !== null),
-    (id) => nodeWidth(s.nodes[id].entries.length),
+    rootSplit ? FOREST : s.rootId,
+    (id) => (id === FOREST ? withDetached([s.rootId]) : withDetached(realChildren(id))),
+    (id) => (id === FOREST ? 0 : nodeWidth(s.nodes[id].entries.length)),
+    { vGap: V_GAP },
   )
+  const yShift = rootSplit ? V_GAP : 0
+
   const nodes: BTreeSnapshot['nodes'] = {}
   for (const [id, node] of Object.entries(s.nodes)) {
-    const pos = positions[id]
-    if (pos) {
+    const pos = positions[id] ?? { x: 0, y: yShift }
+    if (linked.has(id)) {
       const { splitFrom: _linked, ...rest } = node
-      nodes[id] = { ...rest, x: pos.x, y: pos.y }
-      continue
-    }
-    // Not reachable yet: a node that just split off sits to the right of its origin until the parent links it.
-    const origin = node.splitFrom ? positions[node.splitFrom] : undefined
-    const originWidth = node.splitFrom ? nodeWidth(s.nodes[node.splitFrom].entries.length) : 0
-    nodes[id] = {
-      ...node,
-      x: origin ? origin.x + originWidth / 2 + DETACHED_GAP + nodeWidth(node.entries.length) / 2 : 0,
-      y: origin ? origin.y : 0,
+      nodes[id] = { ...rest, x: pos.x, y: pos.y - yShift }
+    } else {
+      nodes[id] = { ...node, x: pos.x, y: pos.y - yShift }
     }
   }
   return { ...s, nodes }

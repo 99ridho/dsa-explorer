@@ -124,4 +124,34 @@ describe('layout', () => {
     expect(t.nodes[t.rootId].x).toBeCloseTo(span)
     expect(kids.every((k) => k.y > t.nodes[t.rootId].y)).toBe(true)
   })
+
+  it('never overlaps nodes on any step, including while a split node is not yet linked', () => {
+    const sequences = [
+      Array.from({ length: 30 }, (_, i) => i + 1),
+      Array.from({ length: 30 }, (_, i) => 30 - i),
+      Array.from({ length: 30 }, (_, i) => ((i * 37) % 97) + 1),
+    ]
+    for (const keys of sequences) {
+      let tree = emptyTree()
+      for (const key of keys) {
+        const { steps, finalSnapshot } = runPut(tree, key)
+        for (const t of [...steps.map((s) => s.snapshot), finalSnapshot]) {
+          const nodes = Object.values(t.nodes)
+          expect(t.nodes[t.rootId].y).toBe(0)
+          const rows = Map.groupBy(nodes, (n) => n.y)
+          for (const row of rows.values()) {
+            row.sort((a, b) => a.x - b.x)
+            for (let i = 1; i < row.length; i++) {
+              expect(row[i - 1].x + nodeWidth(row[i - 1].entries.length) / 2).toBeLessThan(row[i].x - nodeWidth(row[i].entries.length) / 2)
+            }
+          }
+          for (const node of nodes) {
+            for (const e of node.entries) if (e.childId) expect(t.nodes[e.childId].y).toBeGreaterThan(node.y)
+            if (node.splitFrom) expect(node.y).toBe(t.nodes[node.splitFrom].y)
+          }
+        }
+        tree = finalSnapshot
+      }
+    }
+  })
 })
