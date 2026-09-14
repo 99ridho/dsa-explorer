@@ -3,6 +3,7 @@
 // mapped code line in each language, so the synced highlight never goes dark.
 import { describe, expect, it } from 'vitest'
 import type { SnippetLanguage, Step, TopicModule } from '@/types/step-engine'
+import { caseStudies } from '@/case-studies/registry'
 import { topics } from './registry'
 import { INPUTS } from './test-inputs'
 
@@ -24,7 +25,10 @@ function emittedLines(topic: TopicModule, opId: string): Set<number> {
   return lines
 }
 
-describe.each(topics.map((t) => [t.slug, t] as const))('%s snippets', (_slug, topic) => {
+// Case study simulators are TopicModules too (SPEC.md §19.0), so they meet the same contract.
+const modules = [...topics, ...caseStudies.map((c) => c.simulator)]
+
+describe.each(modules.map((t) => [t.slug, t] as const))('%s snippets', (_slug, topic) => {
   for (const op of topic.operations) {
     it(`${op.id}: three languages, mapped inside the listing, covering every emitted line`, () => {
       const pseudo = topic.pseudocode[op.id]

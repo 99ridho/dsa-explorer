@@ -1,4 +1,4 @@
-// SPEC.md §8: topic nav grouped by week range, driven entirely by the registry.
+// SPEC.md §8 and §19.0: topic nav grouped by week range, then the case studies, driven by the registries.
 import { NavLink } from 'react-router'
 import {
   Sidebar,
@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
+import { caseStudies } from '@/case-studies/registry'
 import { topicsByWeek } from '@/topics/registry'
 
 export function AppSidebar() {
@@ -51,6 +52,25 @@ export function AppSidebar() {
             </SidebarGroupContent>
           </SidebarGroup>
         ))}
+        <SidebarGroup>
+          <SidebarGroupLabel>Case Studies</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {caseStudies.map((cs) => (
+                <SidebarMenuItem key={cs.slug}>
+                  <NavLink to={`/case-study/${cs.slug}`}>
+                    {({ isActive }) => (
+                      <SidebarMenuButton isActive={isActive} className="justify-between">
+                        <span>{cs.title}</span>
+                        <Badge className="font-mono text-[10px]">{cs.weekLabel}</Badge>
+                      </SidebarMenuButton>
+                    )}
+                  </NavLink>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter className="px-4 py-3">
         <p className="text-xs text-muted-foreground">

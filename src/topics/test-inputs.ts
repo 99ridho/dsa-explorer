@@ -37,4 +37,11 @@ export const INPUTS: Record<string, unknown[]> = {
   'graph/add-edge': [{ from: '4', to: '5' }, { from: '2', to: '2' }, { from: '0', to: '1' }],
   'graph/bfs': [0, 9],
   'graph/dfs': [0, 9],
+  'canteen-orders/find-binary': [101, 103, 117],
+  'canteen-orders/find-sequential': [104, 117],
+  'er-triage/admit-priority': [[5, 50], [4, 63], [4, 42], [6, 50]],
+  'er-triage/admit-arrival': [[5, 50], [4, 42], [1]],
+  'er-triage/find-record': [63, 60],
+  'study-plan/add-course': ['PR3', 'mth', 'toolong'],
+  'study-plan/add-prereq': ['PR1 before AI', 'PR1 before PR2', 'X9 before PR1', 'DB before db', 'PR1-PR2'],
 }
