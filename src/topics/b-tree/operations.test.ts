@@ -138,7 +138,8 @@ describe('layout', () => {
         for (const t of [...steps.map((s) => s.snapshot), finalSnapshot]) {
           const nodes = Object.values(t.nodes)
           expect(t.nodes[t.rootId].y).toBe(0)
-          const rows = Map.groupBy(nodes, (n) => n.y)
+          const rows = new Map<number, typeof nodes>()
+          for (const n of nodes) rows.set(n.y, [...(rows.get(n.y) ?? []), n])
           for (const row of rows.values()) {
             row.sort((a, b) => a.x - b.x)
             for (let i = 1; i < row.length; i++) {
