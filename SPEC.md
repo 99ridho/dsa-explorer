@@ -8,7 +8,7 @@
 
 ### How to use this document
 
-This spec is written for two readers at once. A human reader can read top to bottom for the shape of the product. An AI coding agent implementing this should treat Sections 6–10 as authoritative contracts: type shapes, file paths, and step tables are specified precisely enough to implement without needing to invent behavior. Where a decision is genuinely open, it's marked **[OPEN]** rather than left ambiguous.
+This spec is written for two readers at once. A human reader can read top to bottom for the shape of the product. An AI coding agent implementing this should treat Sections 6–10 as authoritative contracts: type shapes, file paths, and step tables are specified precisely enough to implement without needing to invent behavior. Where a decision is genuinely open, it's marked **[OPEN]** rather than left ambiguous. Settled decisions and the reasons behind them live in `ADR.md`, and a change that takes a decision records it there in the same change.
 
 ---
 
@@ -32,11 +32,11 @@ An in-browser, single-page app that lets students interactively build and operat
 
 | Layer | Choice |
 |---|---|
-| Framework | React 18 + React Router v7 (SPA/client-only mode: no SSR, no loaders that hit a server) |
+| Framework | React 19 + React Router v7 (ADR-001) (SPA/client-only mode: no SSR, no loaders that hit a server) |
 | Build tool | Vite |
 | Styling | Tailwind CSS v4 (CSS-first config, theme provided in Section 5) |
 | Components | shadcn/ui (Sidebar, Button, Slider, Tabs, Select, Input, Badge, Card) |
-| Animation | Framer Motion (`motion/react`) for snapshot-to-snapshot transitions. **[OPEN]**: confirm acceptable, else fall back to CSS transitions |
+| Animation | Framer Motion (`motion/react`) for snapshot-to-snapshot transitions (ADR-004) |
 | Graph layout | `d3-force` only (not full d3) |
 | Tests | Vitest for the Section 10 step tables (`src/**/*.test.ts`); Playwright (Chromium) for the topic page layout in Section 12 (`e2e/`) |
 | Language | TypeScript throughout |
@@ -479,7 +479,7 @@ Indices above `n` are rendered muted and are excluded from further sink comparis
 
 ### 10.3 Hash Table, `/topic/hash-table`
 
-**Variant:** `strategy: "chaining" | "probing"` (default `"chaining"`). Table size `M` is fixed at a small prime (e.g. 11) for legible visualization. **[OPEN]**: confirm M should be fixed rather than student-configurable.
+**Variant:** `strategy: "chaining" | "probing"` (default `"chaining"`). Table size `M` is fixed at 11, a small prime, for legible visualization (ADR-005).
 
 **State & snapshot**
 
@@ -1414,8 +1414,6 @@ Governance rule: a topic's row only moves to "Specified" once its full Section 1
 
 ## 17. Open Items to Confirm Before/During Build
 
-- [ ] Framer Motion vs. CSS-only transitions (Section 3).
-- [ ] Fixed vs. student-configurable hash table size M (Section 10.3).
 - [ ] Final subdomain name (Section 13).
 
 ## 18. Copy and Text Standard (antislop)

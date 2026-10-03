@@ -15,7 +15,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Source of truth
 
-`SPEC.md` at the repo root is the binding spec. Treat these sections as contracts, not suggestions:
+`SPEC.md` at the repo root is the binding spec. `ADR.md` explains why it reads the way it does (see Decisions below). Treat these sections as contracts, not suggestions:
 
 - **§7**: the types in `src/types/step-engine.ts` are copied verbatim. Don't extend `TopicModule` for one topic's convenience; extend the topic's own types.
 - **§9**: playback semantics of `usePlayback` in `src/lib/step-engine.ts`.
@@ -49,7 +49,7 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Graph positions live in the snapshot.** `buildGraph` runs `layoutGraph` (d3-force) once per vertex/edge set; algorithm steps copy positions and never re-run the simulation. Vertices are integers `0..V-1`, at most 10; undirected edges are stored once with `from < to`.
 - **Heap pseudocode has no blank lines.** The SINK block is appended to the remove, build-heap, and heapsort listings so sub-steps highlight real lines; `highlightLine` values in `operations.ts` are per listing (see the `SinkLines` offsets).
 - **BST node ids are `k${key}`** (`nodeId()` in `src/topics/bst/types.ts`), because keys are unique, so the id is stable across snapshots and Framer Motion can animate a node between positions.
-- **Hash table `M` is fixed at 11** (`HASH_TABLE_M`); Framer Motion (`motion/react`) is the animation layer. Both were §17 open items, decided 2026-09-13.
+- **Hash table `M` is fixed at 11** (`HASH_TABLE_M`, ADR-005); Framer Motion (`motion/react`) is the animation layer (ADR-004).
 - **Linked snapshots store real links** (`nodes` map + `firstId`/`lastId` + `nextId`, helpers in `src/lib/linked-nodes.ts`), never an ordered array: a step can show a node that exists but is not yet reachable, and `nextId` lives in the snapshot so `run()` stays pure. Node ids are `n${nextId}`.
 - **Row canvases are shared.** `ArrayRow` and `LinkedRow` in `src/components/visualizer/canvas/` draw every array-backed and linked topic; highlight-kind classes live in `kinds.ts` there. A topic's `canvas.tsx` only maps its snapshot to cells.
 - **`inputKind: 'text'`** is a free-form field (Stack's Evaluate expression). An operation may set `placeholder` to override the per-kind default in `input-parsing.ts`.
@@ -108,19 +108,14 @@ All twelve RPS topics are implemented (SPEC §10.1 to §10.12, expansion of 2026
 - **Step descriptions** are plain strings following the spec's templates (e.g. `` `${key} < ${node.key} → go left` ``). Extra runtime detail goes in `variables`, rendered as badges.
 - **TypeScript**: `tsc -b` with `tsconfig.app.json` (`src/`, tests excluded) and `tsconfig.node.json` (Vite + Vitest configs). `baseUrl` is not used (deprecated in TS 6); `paths` alone resolves `@/`.
 
-## Decisions log
+## Decisions
 
-- **React 19 + React Router v7** (spec said React 18). Current shadcn requires 19; Router is pinned `^7`; v8 exists, don't upgrade casually.
-- **Vite 8 / Tailwind v4 / TS 6** with npm (not pnpm), matching the sibling `statprob-explorer` project.
-- **Deployment**: GHCR image via `.github/workflows/deploy.yml`; Traefik labels and the Cloudflare Tunnel hostname live on the home server. The subdomain (`dsa.ridhopratama.net` proposed) is still an open item from §17.
-- **Two-column topic page** (2026-09-13): visualizer left + sticky, materials right in tabs, replacing the spec's original usage → visualizer → material stack; SPEC §6 was amended to match. `main` is capped at `max-w-screen-2xl` to give the split room.
-- **Viewport-locked topic page** (2026-09-14): replaces the sticky column. At `lg` the page never scrolls; only the Code listing and the materials panel do, and Operation, Playback, and Code size to their content. SPEC §3, §4, §6, §8, §12, §16 amended; Playwright added for the layout contract (`e2e/`, `npm run test:e2e`, runs in CI before the image build).
-- **Code panel: wrapping + language tabs** (2026-09-13): lines no longer clip; every operation ships C++, Java (algs4 style), and Python with synced highlighting. SPEC §7, §8, §10 intro, §14, §16 amended.
-- **Remaining visualizers completed** (2026-09-13): heap, hash table, graph implemented against SPEC §10.2 to §10.4; the spec gained `variants`, `createInitialState(variant)`, hash and graph step tables, `PROBE_DELETE`, `Add edge`, integer vertices, and cycle handling for topological sort. `PlaceholderCanvas` removed.
-- **antislop mandated** (2026-09-13): SPEC §18 written, copy audited (`anti-slop/audit-001-2026-09-13.md`), `lint:copy` guard added to `lint` and CI, references scrubbed for punctuation only and `content.ts` regenerated.
-- **Structure view** (2026-09-14): every topic declares `structure` (SPEC §7 `StructureSpec`): the ADT operations with costs quoted from the references, invariants, and a language-neutral declaration per representation, shown in a third materials tab, plus a live instance-fields row under the canvas. Chosen over per-language declarations (three times the authoring) and over a fifth Code tab (it would crowd the listing). Analysis of Algorithms and Sorting get an honest entry with an empty operation table.
-- **Case studies** (2026-09-14): three scenarios, one per block of the semester, each with a naive-versus-chosen simulator, a Reasoning tab, and an 8-question quiz (6 multiple choice, 2 predict-the-next-step). SPEC §2 now allows a quiz on case study pages only; scores stay in memory. The empty text-input error became generic ("The field is empty. Type a value, then press Go.") because course codes use `inputKind: 'text'` too.
-- **BST initial state** is a fixed seed tree (`50 30 70 20 40 60 80`) rather than empty, so the page is demo-ready on load. Reset returns to it.
+`ADR.md` records every decision that changed or settled the spec, with its context and consequences. Recording one is mandatory: a change that takes a decision adds its ADR entry in the same change, never in a follow-up.
+
+- **What counts.** Settling an `[OPEN]` item; amending `SPEC.md`, or departing from it (for example ADR-001, React 19 over the spec's 18); adding, replacing, or upgrading a dependency or tool; changing a layout contract, an invariant above, or the CI and deploy pipeline; picking one approach over a named alternative. A decision the user makes in conversation counts too.
+- **What does not.** A bug fix, a refactor, or a new topic that follows the existing spec and invariants.
+- **How.** Append the next number using the existing format (date, status, Context, Decision, Consequences). Never renumber or delete an entry: a reversal is a new ADR, and the old one's status becomes "Superseded by ADR-NNN". Amend `SPEC.md` in the same change, and cite the ADR number where the spec or an invariant states the result.
+- **Unsure?** Record it. A short ADR costs less than a decision nobody can trace.
 
 <!-- antislop:start -->
 ## antislop
