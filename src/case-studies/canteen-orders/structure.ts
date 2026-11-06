@@ -5,7 +5,7 @@ import type { CanteenSnapshot } from './types'
 
 const LOG_FIELDS = [
   { name: 'log', type: 'int[]', role: 'served order numbers; doubles when full' },
-  { name: 'n', type: 'int', role: 'orders in the log' },
+  { name: 'size', type: 'int', role: 'orders in the log' },
 ]
 
 export const canteenStructure: StructureSpec<CanteenSnapshot> = {
@@ -50,11 +50,11 @@ export const canteenStructure: StructureSpec<CanteenSnapshot> = {
         'class OrderCounter',
         '  pending: Queue<int>    linked nodes, first is the oldest order',
         '  log: int[]             served orders, capacity doubles when full',
-        '  n: int                 orders in the log',
+        '  size: int              orders in the log',
         '  nextOrder: int',
       ],
       fields: [{ name: 'pending', type: 'Queue<int>', role: 'waiting orders, oldest at first' }, ...LOG_FIELDS],
-      invariants: ['The queue serves orders in number order, so log[0..n-1] is sorted and binary search works on it.'],
+      invariants: ['The queue serves orders in number order, so log[0..size-1] is sorted and binary search works on it.'],
     },
     stack: {
       label: 'Stack and unsorted log',
@@ -62,7 +62,7 @@ export const canteenStructure: StructureSpec<CanteenSnapshot> = {
         'class OrderCounter',
         '  pending: Stack<int>    linked nodes, first is the newest order',
         '  log: int[]             served orders, capacity doubles when full',
-        '  n: int                 orders in the log',
+        '  size: int              orders in the log',
         '  skipped: int           orders served while an older order waited',
       ],
       fields: [{ name: 'pending', type: 'Stack<int>', role: 'waiting orders, newest at first' }, ...LOG_FIELDS],

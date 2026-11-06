@@ -24,7 +24,7 @@ describe('seed', () => {
 describe('get', () => {
   it('descends by guide key and hits in the leaf', () => {
     const { steps } = runGet(buildTree(SEED), 60)
-    expect(lines(steps)).toEqual([7, 4, 4])
+    expect(lines(steps)).toEqual([4, 7, 7])
     expect(steps[0].description).toBe('60 >= 50, the last guide key, so descend into child 1.')
     expect(steps[0].snapshot.nodes[steps[0].snapshot.rootId].entryIndex).toBe(1)
     expect(steps[1].description).toBe('Comparing 60 with 50 in this leaf.')
@@ -35,7 +35,7 @@ describe('get', () => {
   it('descends left by the next guide key and misses', () => {
     const { steps } = runGet(buildTree(SEED), 25)
     expect(steps[0].description).toBe('25 < 50, so descend into child 0.')
-    expect(lines(steps)).toEqual([7, 4, 4, 8])
+    expect(lines(steps)).toEqual([4, 7, 7, 8])
     expect(steps.at(-1)!.description).toBe('25 is not in this leaf: MISS.')
   })
 })
@@ -43,7 +43,7 @@ describe('get', () => {
 describe('put', () => {
   it('places a key in a leaf with room', () => {
     const { steps, finalSnapshot } = runPut(buildTree(SEED), 40)
-    expect(lines(steps)).toEqual([9, 14])
+    expect(lines(steps)).toEqual([4, 8])
     expect(steps[1].description).toBe('Placing 40 at position 2 in the leaf: it now holds 3 entries.')
     expect(children(finalSnapshot, finalSnapshot.rootId)[0]).toEqual([20, 30, 40])
     expect(Object.values(finalSnapshot.nodes).every((n) => n.highlight === undefined)).toBe(true)
@@ -51,7 +51,7 @@ describe('put', () => {
 
   it('splits a full leaf and adds a guide key to the parent', () => {
     const { steps, finalSnapshot } = runPut(buildTree(SEED), 80)
-    expect(lines(steps)).toEqual([9, 14, 18, 14])
+    expect(lines(steps)).toEqual([4, 8, 10, 15])
     expect(steps[2].description).toBe('The node holds 4 entries, so split it: 50 and 60 stay, 70 and 80 move to a new node.')
     expect(steps[3].description).toBe('Adding guide key 70 for the new node to the parent at position 2: it now holds 3 entries.')
     expect(keysOf(finalSnapshot, finalSnapshot.rootId)).toEqual([20, 50, 70])
@@ -67,10 +67,10 @@ describe('put', () => {
     const t = [80, 10].reduce((tree, k) => runPut(tree, k).finalSnapshot, buildTree(SEED))
     expect(keysOf(t, t.rootId)).toEqual([10, 50, 70])
     const ten = runPut(runPut(buildTree(SEED), 80).finalSnapshot, 10)
-    expect(lines(ten.steps)).toEqual([9, 10, 14])
+    expect(lines(ten.steps)).toEqual([4, 5, 8])
     expect(ten.steps[1].description).toBe('10 is smaller than the guide key 20, so the guide key becomes 10.')
     const { steps, finalSnapshot } = runPut(t, 5)
-    expect(lines(steps)).toEqual([9, 10, 14, 18, 14, 18, 4])
+    expect(lines(steps)).toEqual([4, 5, 8, 10, 15, 10, 12])
     expect(steps.at(-1)!.description).toBe('The root split into two nodes, so a new root above them adds a level: height is now 2.')
     expect(finalSnapshot.height).toBe(2)
     expect(keysOf(finalSnapshot, finalSnapshot.rootId)).toEqual([5, 50])
@@ -82,19 +82,19 @@ describe('put', () => {
 
   it('stops on a duplicate key', () => {
     const { steps, finalSnapshot } = runPut(buildTree(SEED), 50)
-    expect(lines(steps)).toEqual([9, 7])
+    expect(lines(steps)).toEqual([4, 7])
     expect(steps[1].description).toBe('50 is already in this leaf, so nothing changes.')
     expect(finalSnapshot.n).toBe(5)
   })
 
   it('grows from an empty root and refuses the 31st key', () => {
     const one = runPut(emptyTree(), 5)
-    expect(lines(one.steps)).toEqual([14])
+    expect(lines(one.steps)).toEqual([8])
     expect(one.finalSnapshot.height).toBe(0)
     const full = buildTree(Array.from({ length: 30 }, (_, i) => i + 1))
     expect(full.n).toBe(30)
     const { steps, finalSnapshot } = runPut(full, 99)
-    expect(lines(steps)).toEqual([2])
+    expect(lines(steps)).toEqual([1])
     expect(finalSnapshot.n).toBe(30)
   })
 

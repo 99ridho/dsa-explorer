@@ -133,3 +133,13 @@ Each entry has a date, a status, and three parts: the context that forced the de
 **Decision.** Three case studies, one per block of the semester, each with a simulator that runs a chosen design against a naive one, a Reasoning tab, and an 8-question quiz (6 multiple choice, 2 predict-the-next-step).
 
 **Consequences.** SPEC §2 allows a quiz on case study pages only, with scores kept in memory. SPEC §19 holds the step tables. The empty text-input error became generic ("The field is empty. Type a value, then press Go.") because course codes also use `inputKind: 'text'`.
+
+## ADR-014: Plain listings and descriptive names
+
+**Date:** 2026-11-06. **Status:** Accepted.
+
+**Context.** The listings followed algs4 closely: one-letter names (`a`, `n`, `q`, `x`, `h`, `k`, `j`, `v`, `w`, `u`, `t`), abbreviations (`val`, `vals`, `ops`, `lo`, `hi`, `oldfirst`), and for the B-tree a recursive `insert` over `ht` with `x.m` and `entry[j+1].key` that took several reads to follow. The user asked for a B-tree listing a student can follow in a few reads, with the code tabs rewritten to match it line by line, and for every topic and case study to use the same style and descriptive names.
+
+**Decision.** Every pseudocode listing, every C++, Java, and Python snippet, every Structure declaration, and every narration template that quotes a variable uses the naming rules in SPEC §10 ("Listings and names"). Where only names change, each listing keeps its line count and line meaning, so the step tables keep their Line column. The B-tree is the one restructure: an iterative `GET` and `PUT` over `node.entries`, `entry.child`, `entry.value`, `node.isLeaf`, and a `path` stack, with the same semantics, steps, and narration as before. Its lines move (descend 7 and 9 to 4, guide rewrite 10 to 5, leaf compare 4 to 7, place 14 to 8, split 18 to 10, parent entry 14 to 15, root split 4 to 12, 30-key cap 2 to 1). Sorting keeps `less` and spells `exch` as `exchange`, because the compares and exchanges counters are the Week 5 cost model.
+
+**Consequences.** SPEC §10 and §19 listings and templates are amended; the er-triage find step remaps the B-tree lines (`FIND_LINE`). Live-field chips say `size` instead of `n`, the linked stack says `top` instead of `first`, and the binary search pointers say `low`, `middle`, `high`. The code tabs are no longer verbatim algs4, and the Core Material tab, which quotes the week reference, still uses the reference's names.

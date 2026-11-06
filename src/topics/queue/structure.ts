@@ -37,20 +37,20 @@ export const queueStructure: StructureSpec<QueueSnapshot> = {
       label: 'Resizing array',
       declaration: [
         'class ResizingArrayQueue',
-        '  q: Item[]    items sit from q[first] to q[last - 1], wrapping at q.length',
-        '  first: int   index of the front item',
-        '  last: int    index one past the back item',
-        '  n: int       number of items',
+        '  items: Item[]   items sit from items[first] to items[last - 1], wrapping at items.length',
+        '  first: int      index of the front item',
+        '  last: int       index one past the back item',
+        '  size: int       number of items',
       ],
       fields: [
-        { name: 'q', type: 'Item[]', role: 'the items, wrapping around the end of the array' },
+        { name: 'items', type: 'Item[]', role: 'the items, wrapping around the end of the array' },
         { name: 'first', type: 'int', role: 'index of the front item' },
         { name: 'last', type: 'int', role: 'index where the next enqueue writes' },
-        { name: 'n', type: 'int', role: 'number of items' },
+        { name: 'size', type: 'int', role: 'number of items' },
       ],
       invariants: [
-        'Items occupy the n slots from first to last - 1 modulo q.length.',
-        'enqueue doubles the array when n equals q.length, and dequeue halves it when n drops to q.length / 4, and a resize copies the items back to index 0.',
+        'Items occupy the size slots from first to last - 1 modulo items.length.',
+        'enqueue doubles the array when size equals items.length, and dequeue halves it when size drops to items.length / 4, and a resize copies the items back to index 0.',
       ],
     },
     linked: {
@@ -59,7 +59,7 @@ export const queueStructure: StructureSpec<QueueSnapshot> = {
         'class Queue',
         '  first: Node  front of the queue, null when empty',
         '  last: Node   back of the queue, null when empty',
-        '  n: int       number of items',
+        '  size: int    number of items',
         'class Node',
         '  item: Item',
         '  next: Node   the node behind, null at the back',
@@ -67,7 +67,7 @@ export const queueStructure: StructureSpec<QueueSnapshot> = {
       fields: [
         { name: 'first', type: 'Node', role: 'front of the queue, where dequeue removes' },
         { name: 'last', type: 'Node', role: 'back of the queue, where enqueue links' },
-        { name: 'n', type: 'int', role: 'number of items' },
+        { name: 'size', type: 'int', role: 'number of items' },
         { name: 'Node.item', type: 'Item', role: 'the value the node holds' },
         { name: 'Node.next', type: 'Node', role: 'the node behind, null at the back' },
       ],
@@ -80,12 +80,12 @@ export const queueStructure: StructureSpec<QueueSnapshot> = {
   liveFields: (snapshot): Record<string, string | number> => {
     if (snapshot.impl === 'array') {
       const { slots, first, last, n } = snapshot
-      return { n, first, last, capacity: slots.length }
+      return { size: n, first, last, capacity: slots.length }
     }
     return {
       first: snapshot.firstId ?? 'null',
       last: snapshot.lastId ?? 'null',
-      n: walk(snapshot.nodes, snapshot.firstId).length,
+      size: walk(snapshot.nodes, snapshot.firstId).length,
     }
   },
 }

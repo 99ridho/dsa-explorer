@@ -22,10 +22,10 @@ export function CanteenCanvas({ snapshot }: { snapshot: CanteenSnapshot; variant
         : []
   const pointers: { name: string; index: number }[] = []
   if (range) {
-    pointers.push({ name: 'lo', index: range.lo })
-    pointers.push({ name: 'hi', index: range.hi })
+    pointers.push({ name: 'low', index: range.lo })
+    pointers.push({ name: 'high', index: range.hi })
   }
-  if (highlight?.kind === 'current' && highlight.indices && range) pointers.push({ name: 'mid', index: highlight.indices[0] })
+  if (highlight?.kind === 'current' && highlight.indices && range) pointers.push({ name: 'middle', index: highlight.indices[0] })
 
   return (
     <div className="space-y-4">

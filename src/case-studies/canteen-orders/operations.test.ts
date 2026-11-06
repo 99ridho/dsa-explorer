@@ -83,14 +83,14 @@ describe('find order', () => {
     const hit = run('find-binary', seed('queue'), 101)
     expect(lines(hit.steps)).toEqual([4, 5, 4, 7])
     expect(descs(hit.steps)).toEqual([
-      'lo = 0, hi = 2, so mid = 1: order 102.',
+      'low = 0, high = 2, so middle = 1: order 102.',
       '101 < 102, so search the left half.',
-      'lo = 0, hi = 0, so mid = 0: order 101.',
+      'low = 0, high = 0, so middle = 0: order 101.',
       'Found order 101 at position 0 after 2 compares.',
     ])
     expect(hit.steps[0].snapshot.range).toEqual({ lo: 0, hi: 2 })
     const miss = run('find-binary', seed('queue'), 117)
-    expect(descs(miss.steps).at(-1)).toBe('lo is past hi after 2 compares: order 117 is not in the served log.')
+    expect(descs(miss.steps).at(-1)).toBe('low is past high after 2 compares: order 117 is not in the served log.')
     expect(miss.steps.at(-1)!.highlightLine).toBe(8)
   })
 

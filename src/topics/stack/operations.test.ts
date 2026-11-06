@@ -53,12 +53,12 @@ describe('resizing array', () => {
 })
 
 describe('linked list', () => {
-  it('push creates a detached node then links it to the old first', () => {
+  it('push creates a detached node then links it to the old top', () => {
     const { steps, finalSnapshot } = runLinkedPush(buildLinkedStack([5, 9, 2]), 7)
     expect(lines(steps)).toEqual([3, 4])
-    expect(steps[0].description).toBe('Creating a node for 7: first now points at it.')
+    expect(steps[0].description).toBe('Creating a node for 7: top now points at it.')
     expect((steps[0].snapshot as LinkedStackSnapshot).nodes.n3.next).toBeNull()
-    expect(steps[1].description).toBe('Linking 7 to the old first node 2: the stack holds 4 items.')
+    expect(steps[1].description).toBe('Linking 7 to the old top node 2: the stack holds 4 items.')
     const s = finalSnapshot as LinkedStackSnapshot
     expect([s.firstId, s.nodes.n3.next]).toEqual(['n3', 'n2'])
   })
@@ -66,16 +66,16 @@ describe('linked list', () => {
   it('push on an empty stack', () => {
     const { steps } = runLinkedPush(buildLinkedStack([]), 7)
     expect(lines(steps)).toEqual([3, 4])
-    expect(steps[1].description).toBe('There was no old first node, so 7 is the only node: the stack holds 1 item.')
+    expect(steps[1].description).toBe('There was no old top node, so 7 is the only node: the stack holds 1 item.')
   })
 
-  it('pop takes first and advances, ending empty', () => {
+  it('pop takes top and advances, ending empty', () => {
     const one = runLinkedPop(buildLinkedStack([5, 9]))
     expect(lines(one.steps)).toEqual([7, 8])
-    expect(one.steps[0].description).toBe('Taking 9 from first.')
-    expect(one.steps[1].description).toBe('first moves to 5: the stack holds 1 item.')
+    expect(one.steps[0].description).toBe('Taking 9 from top.')
+    expect(one.steps[1].description).toBe('top moves to 5: the stack holds 1 item.')
     const two = runLinkedPop(one.finalSnapshot as LinkedStackSnapshot)
-    expect(two.steps[1].description).toBe('first becomes null: the stack is empty.')
+    expect(two.steps[1].description).toBe('top becomes null: the stack is empty.')
     expect(lines(runLinkedPop(two.finalSnapshot as LinkedStackSnapshot).steps)).toEqual([7])
   })
 })

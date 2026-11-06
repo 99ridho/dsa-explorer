@@ -248,8 +248,8 @@ function runTreatArrival(state: TriageState): OperationResult<TriageSnapshot> {
 
 // ---------- Find record ----------
 
-/** B-tree get lines: 7 descends a level, 4 compares in the leaf, 8 misses. */
-const FIND_LINE: Record<number, number> = { 7: 4, 4: 5, 8: 5 }
+/** B-tree get lines: 4 descends a level, 7 compares in the leaf, 8 misses. */
+const FIND_LINE: Record<number, number> = { 4: 4, 7: 5, 8: 5 }
 
 function runFindRecord(state: TriageState, record: number): OperationResult<TriageSnapshot> {
   const rec = new StepRecorder()

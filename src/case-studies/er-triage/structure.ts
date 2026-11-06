@@ -49,13 +49,13 @@ export const triageStructure: StructureSpec<TriageSnapshot> = {
       label: 'Max heap and B-tree',
       declaration: [
         'class TriageDesk',
-        '  pq: Patient[]              pq[1..n] in heap order, pq[0] unused',
-        '  n: int                     patients waiting',
+        '  heap: Patient[]            heap[1..size] in heap order, heap[0] unused',
+        '  size: int                  patients waiting',
         '  archive: BTree<int, Record>',
       ],
       fields: [
-        { name: 'pq', type: 'Patient[]', role: 'the waiting list, most urgent at pq[1]' },
-        { name: 'n', type: 'int', role: 'number of patients waiting' },
+        { name: 'heap', type: 'Patient[]', role: 'the waiting list, most urgent at heap[1]' },
+        { name: 'size', type: 'int', role: 'number of patients waiting' },
         ARCHIVE_FIELD,
       ],
       invariants: ['Every patient is at least as urgent as its children, so the most urgent patient is at the root.'],

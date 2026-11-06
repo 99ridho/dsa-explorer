@@ -17,7 +17,7 @@ export const bstStructure: StructureSpec<BSTSnapshot> = {
     operations: [
       {
         name: 'put',
-        signature: 'put(key, val)',
+        signature: 'put(key, value)',
         cost: 'O(h), h the height; about 1.39 lg N compares on average for random keys',
         note: 'Searches for the key and replaces the null link where the search ends with a new node.',
         operationIds: ['insert'],
@@ -61,18 +61,18 @@ export const bstStructure: StructureSpec<BSTSnapshot> = {
         '  root: Node   null when the tree is empty',
         'class Node',
         '  key: Key',
-        '  val: Value',
+        '  value: Value',
         '  left: Node   subtree of smaller keys',
         '  right: Node  subtree of larger keys',
-        '  N: int       nodes in this subtree',
+        '  size: int    nodes in this subtree',
       ],
       fields: [
         { name: 'root', type: 'Node', role: 'the top node, null when the tree is empty' },
         { name: 'Node.key', type: 'Key', role: 'the key that orders the node' },
-        { name: 'Node.val', type: 'Value', role: 'the value stored with the key; the canvas does not draw it' },
+        { name: 'Node.value', type: 'Value', role: 'the value stored with the key; the canvas does not draw it' },
         { name: 'Node.left', type: 'Node', role: 'subtree of smaller keys, null when none' },
         { name: 'Node.right', type: 'Node', role: 'subtree of larger keys, null when none' },
-        { name: 'Node.N', type: 'int', role: 'nodes in this subtree, so size runs in constant time; the canvas does not draw it' },
+        { name: 'Node.size', type: 'int', role: 'nodes in this subtree, so size runs in constant time; the canvas does not draw it' },
       ],
       invariants: ['Every node is reachable from root by exactly one path of left and right links.'],
     },
@@ -81,7 +81,7 @@ export const bstStructure: StructureSpec<BSTSnapshot> = {
     const h = height(snapshot, snapshot.rootId)
     return {
       root: snapshot.rootId ?? 'null',
-      n: Object.keys(snapshot.nodes).length,
+      size: Object.keys(snapshot.nodes).length,
       height: h < 0 ? 'none' : h,
     }
   },

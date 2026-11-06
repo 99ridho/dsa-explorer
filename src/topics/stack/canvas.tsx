@@ -30,13 +30,13 @@ function LinkedCanvas({ snapshot }: { snapshot: LinkedStackSnapshot }) {
   return (
     <LinkedRow
       ariaLabel={`Stack as a linked list of ${Object.keys(nodes).length} nodes`}
-      emptyText="first is null: the stack is empty."
+      emptyText="top is null: the stack is empty."
       kindClass={LINKED_KIND}
       chains={chains(nodes, firstId).map((chain) =>
         chain.map((id) => ({
           id,
           label: String(nodes[id].value),
-          pointers: firstId === id ? ['first'] : [],
+          pointers: firstId === id ? ['top'] : [],
           kind: highlight?.ids.includes(id) ? highlight.kind : undefined,
         })),
       )}

@@ -2,28 +2,28 @@
 
 const ARRAY = [
   'PUSH(item):',
-  '  if n == a.length: RESIZE(2 * a.length)',
-  '  a[n] = item; n = n + 1',
+  '  if size == items.length: RESIZE(2 * items.length)',
+  '  items[size] = item; size = size + 1',
   'POP():',
-  '  item = a[n - 1]; a[n - 1] = null; n = n - 1',
-  '  if n > 0 and n == a.length / 4: RESIZE(a.length / 2)',
+  '  item = items[size - 1]; items[size - 1] = null; size = size - 1',
+  '  if size > 0 and size == items.length / 4: RESIZE(items.length / 2)',
   '  return item',
   'RESIZE(capacity):',
-  '  copy = new array[capacity]',
-  '  for i = 0 to n - 1: copy[i] = a[i]',
-  '  a = copy',
+  '  resized = new array[capacity]',
+  '  for i = 0 to size - 1: resized[i] = items[i]',
+  '  items = resized',
 ]
 
 const LINKED = [
   'PUSH(item):',
-  '  oldfirst = first',
-  '  first = NODE(item)',
-  '  first.next = oldfirst',
-  '  n = n + 1',
+  '  oldTop = top',
+  '  top = NODE(item)',
+  '  top.next = oldTop',
+  '  size = size + 1',
   'POP():',
-  '  item = first.item',
-  '  first = first.next',
-  '  n = n - 1',
+  '  item = top.item',
+  '  top = top.next',
+  '  size = size - 1',
   '  return item',
 ]
 
@@ -31,12 +31,12 @@ const EVALUATE = [
   'EVALUATE(tokens):',
   '  for each token in tokens:',
   '    if token is "(": skip it',
-  '    else if token is an operator: ops.push(token)',
+  '    else if token is an operator: operators.push(token)',
   '    else if token is ")":',
-  '      op = ops.pop(); b = vals.pop(); a = vals.pop()',
-  '      vals.push(APPLY(a, op, b))',
-  '    else: vals.push(NUMBER(token))',
-  '  return vals.pop()',
+  '      operator = operators.pop(); right = operands.pop(); left = operands.pop()',
+  '      operands.push(APPLY(left, operator, right))',
+  '    else: operands.push(NUMBER(token))',
+  '  return operands.pop()',
 ]
 
 export const stackPseudocode: Record<string, string[]> = {

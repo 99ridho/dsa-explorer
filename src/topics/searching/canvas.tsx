@@ -1,5 +1,5 @@
 // SPEC.md §10.11 canvas: `impl` selects the unordered chain of key-value nodes or the ordered
-// key array with the live lo / mid / hi window.
+// key array with the live low / middle / high window.
 import { ArrayRow } from '@/components/visualizer/canvas/ArrayRow'
 import { LinkedRow } from '@/components/visualizer/canvas/LinkedRow'
 import { LINKED_KIND } from '@/components/visualizer/canvas/kinds'
@@ -38,10 +38,10 @@ function BinaryCanvas({ snapshot }: { snapshot: BinarySnapshot }) {
   const { keys, vals, highlight, range } = snapshot
   const pointers: { name: string; index: number }[] = []
   if (range) {
-    pointers.push({ name: 'lo', index: range.lo })
-    pointers.push({ name: 'hi', index: range.hi })
+    pointers.push({ name: 'low', index: range.lo })
+    pointers.push({ name: 'high', index: range.hi })
   }
-  if (highlight?.kind === 'mid') pointers.push({ name: 'mid', index: highlight.indices[0] })
+  if (highlight?.kind === 'mid') pointers.push({ name: 'middle', index: highlight.indices[0] })
   return (
     <ArrayRow
       ariaLabel={`Ordered array of ${keys.length} keys`}

@@ -6,8 +6,8 @@ const serve = (take: string) => [
   'SERVE_NEXT():',
   '  if pending is empty: return',
   `  ${take}`,
-  '  if n == log.length: resize the log to 2 * log.length',
-  '  log[n] = number; n = n + 1',
+  '  if size == log.length: resize the log to 2 * log.length',
+  '  log[size] = number; size = size + 1',
 ]
 
 export const canteenPseudocode: Record<string, string[]> = {
@@ -17,13 +17,13 @@ export const canteenPseudocode: Record<string, string[]> = {
   'serve-stack': serve('number = pending.pop()'),
   'find-binary': [
     'FIND_ORDER(number):',
-    '  lo = 0; hi = n - 1',
-    '  while lo <= hi:',
-    '    mid = (lo + hi) / 2',
-    '    if number < log[mid]: hi = mid - 1',
-    '    else if number > log[mid]: lo = mid + 1',
-    '    else: return mid',
+    '  low = 0; high = size - 1',
+    '  while low <= high:',
+    '    middle = (low + high) / 2',
+    '    if number < log[middle]: high = middle - 1',
+    '    else if number > log[middle]: low = middle + 1',
+    '    else: return middle',
     '  return NOT_SERVED',
   ],
-  'find-sequential': ['FIND_ORDER(number):', '  for i = 0 to n - 1:', '    if log[i] == number: return i', '  return NOT_SERVED'],
+  'find-sequential': ['FIND_ORDER(number):', '  for i = 0 to size - 1:', '    if log[i] == number: return i', '  return NOT_SERVED'],
 }

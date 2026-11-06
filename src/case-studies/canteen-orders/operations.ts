@@ -195,7 +195,7 @@ function runFindBinary(state: CanteenState, number: number): OperationResult<Can
     const mid = Math.floor((lo + hi) / 2)
     const at = s.log[mid]!
     compares += 1
-    rec.push(s, 4, `lo = ${lo}, hi = ${hi}, so mid = ${mid}: order ${at}.`, { indices: [mid], kind: 'current' }, { lo, hi }, { compares })
+    rec.push(s, 4, `low = ${lo}, high = ${hi}, so middle = ${mid}: order ${at}.`, { indices: [mid], kind: 'current' }, { lo, hi }, { compares })
     if (number < at) {
       hi = mid - 1
       rec.push(s, 5, `${number} < ${at}, so search the left half.`, undefined, { lo, hi }, { compares })
@@ -207,7 +207,7 @@ function runFindBinary(state: CanteenState, number: number): OperationResult<Can
       return { steps: rec.steps, finalSnapshot: clone(s) }
     }
   }
-  rec.push(s, 8, `lo is past hi after ${plural(compares, 'compare')}: order ${number} is not in the served log.`, undefined, undefined, { compares })
+  rec.push(s, 8, `low is past high after ${plural(compares, 'compare')}: order ${number} is not in the served log.`, undefined, undefined, { compares })
   return { steps: rec.steps, finalSnapshot: clone(s) }
 }
 

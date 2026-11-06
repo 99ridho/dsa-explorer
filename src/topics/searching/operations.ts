@@ -113,27 +113,27 @@ function rank(rec: BinaryRecorder, s: BinarySnapshot, key: number): { i: number;
   let lo = 0
   let hi = n - 1
   rec.range = { lo, hi }
-  rec.push(s, 11, `lo = 0 and hi = ${hi}: ${key} can only be in this range.`, [], 'mid', { lo, hi })
+  rec.push(s, 11, `low = 0 and high = ${hi}: ${key} can only be in this range.`, [], 'mid', { low: lo, high: hi })
   while (lo <= hi) {
     const mid = lo + Math.floor((hi - lo) / 2)
     rec.compares += 1
-    rec.push(s, 13, `mid = ${mid}: comparing ${key} with keys[${mid}] = ${s.keys[mid]}.`, [mid], 'mid', { lo, mid, hi })
+    rec.push(s, 13, `middle = ${mid}: comparing ${key} with keys[${mid}] = ${s.keys[mid]}.`, [mid], 'mid', { low: lo, middle: mid, high: hi })
     if (key < s.keys[mid]) {
       hi = mid - 1
       rec.range = { lo, hi }
-      rec.push(s, 14, `${key} < ${s.keys[mid]}, so hi becomes ${hi}.`, [], 'mid', { lo, mid, hi })
+      rec.push(s, 14, `${key} < ${s.keys[mid]}, so high becomes ${hi}.`, [], 'mid', { low: lo, middle: mid, high: hi })
     } else if (key > s.keys[mid]) {
       lo = mid + 1
       rec.range = { lo, hi }
-      rec.push(s, 15, `${key} > ${s.keys[mid]}, so lo becomes ${lo}.`, [], 'mid', { lo, mid, hi })
+      rec.push(s, 15, `${key} > ${s.keys[mid]}, so low becomes ${lo}.`, [], 'mid', { low: lo, middle: mid, high: hi })
     } else {
       rec.range = undefined
-      rec.push(s, 16, `${key} equals keys[${mid}], so rank is ${mid}.`, [mid], 'found', { lo, mid, hi })
+      rec.push(s, 16, `${key} equals keys[${mid}], so rank is ${mid}.`, [mid], 'found', { low: lo, middle: mid, high: hi })
       return { i: mid, hit: true }
     }
   }
   rec.range = undefined
-  rec.push(s, 17, `lo passed hi, so rank is ${lo}: ${plural(lo, 'key')} ${lo === 1 ? 'is' : 'are'} smaller than ${key}.`, [], 'mid', { lo, hi })
+  rec.push(s, 17, `low passed high, so rank is ${lo}: ${plural(lo, 'key')} ${lo === 1 ? 'is' : 'are'} smaller than ${key}.`, [], 'mid', { low: lo, high: hi })
   return { i: lo, hit: false }
 }
 

@@ -70,7 +70,7 @@ test.describe('desktop (lg)', () => {
       await quiz.getByRole('button', { name: 'Check answer' }).click()
       await quiz.getByRole('button', { name: 'Next question' }).click()
     }
-    await expect(quiz.locator('figure')).toContainText('Step shown: lo = 0, hi = 2, so mid = 1: order 102.')
+    await expect(quiz.locator('figure')).toContainText('Step shown: low = 0, high = 2, so middle = 1: order 102.')
     await expect(quiz.locator('figure [aria-label^="Served log"]')).toBeVisible()
   })
 

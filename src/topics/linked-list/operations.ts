@@ -127,7 +127,7 @@ export function runTraverse(state: LinkedListState): OperationResult<LinkedListS
   })
   const all: Record<string, LinkedListHighlightKind> = {}
   for (const id of order) all[id] = 'visited'
-  rec.push(s, 2, `x is null, so the traversal ends after ${order.length} nodes.`, all, { visited: visited.join(', ') })
+  rec.push(s, 2, `node is null, so the traversal ends after ${order.length} nodes.`, all, { visited: visited.join(', ') })
   return { steps: rec.steps, finalSnapshot: s }
 }
 

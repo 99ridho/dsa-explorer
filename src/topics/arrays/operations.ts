@@ -55,7 +55,7 @@ function checkBounds(rec: StepRecorder, s: ArraysSnapshot, i: number): boolean {
 export function runAccess(state: ArraysState, i: number): OperationResult<ArraysSnapshot> {
   const rec = new StepRecorder()
   const s = cloneSnapshot(state)
-  if (checkBounds(rec, s, i)) rec.push(s, 3, `a[${i}] holds ${s.values[i]}.`, [i], 'read')
+  if (checkBounds(rec, s, i)) rec.push(s, 3, `items[${i}] holds ${s.values[i]}.`, [i], 'read')
   return { steps: rec.steps, finalSnapshot: s }
 }
 
@@ -70,7 +70,7 @@ export function runSet(state: ArraysState, input: number[]): OperationResult<Arr
   if (checkBounds(rec, s, i)) {
     const old = s.values[i]
     s.values[i] = v
-    rec.push(s, 3, `Writing ${v} into a[${i}], replacing ${old}.`, [i], 'write')
+    rec.push(s, 3, `Writing ${v} into items[${i}], replacing ${old}.`, [i], 'write')
   }
   return { steps: rec.steps, finalSnapshot: s }
 }
@@ -88,11 +88,11 @@ export function runResize(state: ArraysState): OperationResult<ArraysSnapshot> {
   for (let i = 0; i < N; i++) {
     s.resizing.values[i] = s.values[i]
     s.resizing.copied = i + 1
-    rec.push(s, 3, `Copying a[${i}] = ${s.values[i]} into the new array.`, [i], 'copy')
+    rec.push(s, 3, `Copying items[${i}] = ${s.values[i]} into the new array.`, [i], 'copy')
   }
   s.values = s.resizing.values
   delete s.resizing
-  rec.push(s, 4, `The new array replaces the old one, so a has ${2 * N} slots and the old array can be reclaimed.`)
+  rec.push(s, 4, `The new array replaces the old one, so items has ${2 * N} slots and the old array can be reclaimed.`)
   return { steps: rec.steps, finalSnapshot: s }
 }
 
@@ -107,8 +107,8 @@ export function runMemory(state: ArraysState): OperationResult<ArraysSnapshot> {
 
 export const arraysOperations: OperationDefinition<ArraysState, unknown, ArraysSnapshot>[] = [
   { id: 'create', label: 'Create from list', inputKind: 'array', placeholder: 'e.g. 5, 3, 8, 1', run: (s, v) => runCreate(s, v as number[]) },
-  { id: 'access', label: 'Access a[i]', inputKind: 'key', placeholder: 'Index, e.g. 2', run: (s, i) => runAccess(s, i as number) },
-  { id: 'set', label: 'Set a[i] = v', inputKind: 'array', placeholder: 'index, value, e.g. 2, 7', run: (s, v) => runSet(s, v as number[]) },
+  { id: 'access', label: 'Access items[index]', inputKind: 'key', placeholder: 'Index, e.g. 2', run: (s, i) => runAccess(s, i as number) },
+  { id: 'set', label: 'Set items[index] = value', inputKind: 'array', placeholder: 'index, value, e.g. 2, 7', run: (s, v) => runSet(s, v as number[]) },
   { id: 'resize', label: 'Resize to double', inputKind: 'none', run: (s) => runResize(s) },
   { id: 'memory', label: 'Memory cost', inputKind: 'none', run: (s) => runMemory(s) },
 ]

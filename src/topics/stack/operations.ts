@@ -140,13 +140,13 @@ export function runLinkedPush(state: LinkedStackSnapshot, item: number): Operati
   s.nextId += 1
   s.nodes[id] = { id, value: item, next: null }
   s.firstId = id
-  rec.push(s, 3, `Creating a node for ${item}: first now points at it.`, [id], 'new')
+  rec.push(s, 3, `Creating a node for ${item}: top now points at it.`, [id], 'new')
 
   if (oldfirst === null) {
-    rec.push(s, 4, `There was no old first node, so ${item} is the only node: the stack holds 1 item.`, [id], 'new')
+    rec.push(s, 4, `There was no old top node, so ${item} is the only node: the stack holds 1 item.`, [id], 'new')
   } else {
     s.nodes[id].next = oldfirst
-    rec.push(s, 4, `Linking ${item} to the old first node ${s.nodes[oldfirst].value}: the stack holds ${plural(count(s), 'item')}.`, [id, oldfirst], 'current')
+    rec.push(s, 4, `Linking ${item} to the old top node ${s.nodes[oldfirst].value}: the stack holds ${plural(count(s), 'item')}.`, [id, oldfirst], 'current')
   }
   return { steps: rec.steps, finalSnapshot: s }
 }
@@ -161,14 +161,14 @@ export function runLinkedPop(state: LinkedStackSnapshot): OperationResult<StackS
   }
 
   const first = s.nodes[s.firstId]
-  rec.push(s, 7, `Taking ${first.value} from first.`, [first.id], 'current')
+  rec.push(s, 7, `Taking ${first.value} from top.`, [first.id], 'current')
   const nextId = first.next
   delete s.nodes[first.id]
   s.firstId = nextId
   if (nextId === null) {
-    rec.push(s, 8, 'first becomes null: the stack is empty.')
+    rec.push(s, 8, 'top becomes null: the stack is empty.')
   } else {
-    rec.push(s, 8, `first moves to ${s.nodes[nextId].value}: the stack holds ${plural(count(s), 'item')}.`, [nextId], 'current')
+    rec.push(s, 8, `top moves to ${s.nodes[nextId].value}: the stack holds ${plural(count(s), 'item')}.`, [nextId], 'current')
   }
   return { steps: rec.steps, finalSnapshot: s }
 }

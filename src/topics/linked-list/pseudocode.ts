@@ -2,17 +2,17 @@
 export const linkedListPseudocode: Record<string, string[]> = {
   'insert-first': [
     'INSERT_FIRST(item):',
-    '  oldfirst = first',
+    '  oldFirst = first',
     '  first = NODE(item)',
-    '  first.next = oldfirst',
-    '  if oldfirst is null: last = first',
+    '  first.next = oldFirst',
+    '  if oldFirst is null: last = first',
   ],
   'insert-last': [
     'INSERT_LAST(item):',
-    '  oldlast = last',
+    '  oldLast = last',
     '  last = NODE(item)',
-    '  if oldlast is null: first = last',
-    '  else: oldlast.next = last',
+    '  if oldLast is null: first = last',
+    '  else: oldLast.next = last',
   ],
   'remove-first': [
     'REMOVE_FIRST():',
@@ -22,5 +22,5 @@ export const linkedListPseudocode: Record<string, string[]> = {
     '  if first is null: last = null',
     '  return item',
   ],
-  traverse: ['TRAVERSE():', '  for x = first; x is not null; x = x.next:', '    VISIT(x.item)'],
+  traverse: ['TRAVERSE():', '  for node = first; node is not null; node = node.next:', '    VISIT(node.item)'],
 }

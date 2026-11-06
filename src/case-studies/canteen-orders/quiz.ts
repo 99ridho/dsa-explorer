@@ -97,7 +97,7 @@ export const canteenQuiz: QuizQuestion[] = [
       'Order 101 is not in the served log.',
     ],
     answer: 1,
-    explanation: 'The log is sorted and 101 is smaller than 102, so 101 can only be to its left: hi becomes mid - 1 (Week 7).',
+    explanation: 'The log is sorted and 101 is smaller than 102, so 101 can only be to its left: high becomes middle - 1 (Week 7).',
     topicSlug: 'searching',
   },
   {

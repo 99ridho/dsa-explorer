@@ -30,7 +30,7 @@ export const studyPlanDecisions: DecisionRow[] = [
     chosen: {
       name: 'Directed graph, adjacency lists',
       cost: 'O(1) to add an edge (Weeks 13–15)',
-      reason: 'A prerequisite is one-way, so each edge needs a direction: v to w means take v first.',
+      reason: 'A prerequisite is one-way, so each edge needs a direction: an edge from course to dependent means take course first.',
       topicSlug: 'graph',
     },
     rejected: [

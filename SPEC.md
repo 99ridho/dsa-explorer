@@ -265,7 +265,9 @@ Rules:
 
 Each subsection gives: the snapshot shape, the canvas layout rule, and pseudocode + a step table per operation. The step table is the contract for `run()`: implement `run()` so it emits exactly these steps, in this order, for these trigger conditions.
 
-Every operation also ships a C++, Java, and Python implementation in the topic's `snippets.ts`, each line optionally mapped to the pseudocode line it implements (`SnippetLine.pseudo`). Java follows the algs4 shape (Sedgewick & Wayne: `less`/`exch`, `swim`/`sink`, `marked[]`/`edgeTo[]`, and so on); C++ and Python are direct translations, not idiomatic rewrites, so a student can read the three side by side. Contract: every pseudocode line a step can highlight must have at least one mapped line in each language; `src/topics/snippets.test.ts` runs every operation on its seed state and checks this. Comments inside snippets are prose and fall under Section 18.
+Every operation also ships a C++, Java, and Python implementation in the topic's `snippets.ts`, each line optionally mapped to the pseudocode line it implements (`SnippetLine.pseudo`). Java follows the logic of the algs4 classes (Sedgewick & Wayne: `less`, `swim`/`sink`, `edgeTo[]`, and so on); C++ and Python are direct translations, not idiomatic rewrites, so a student can read the three side by side.
+
+**Listings and names (ADR-014).** The pseudocode and the three languages use the same descriptive names, so a student reads one vocabulary across the Pseudocode tab, the code tabs, the Structure tab, and the narration. No one-letter names except loop counters (`i`, then `j` and `k` for nested loops) and the course's size notation (`N`, `M`, `V`, `E`). No abbreviations: `value`, `values`, `operators`, `operands`, `low`/`middle`/`high`, `previous`. A count of items is `size`; a backing array is `items` (`heap` for the binary heap); linked ends are `first` and `last`, and `top` for the linked stack. Graph code says `vertex`, `neighbor`, `source`, `adjacent`, and `visited`. Sorting keeps `less` and spells `exch` out as `exchange`, the name of the cost model's second operation. Java and C++ use camelCase and Python snake_case for the same name. The B-tree listing is iterative (a `path` stack instead of recursion) so it reads top to bottom. The Core Material tab quotes the week reference verbatim, so it keeps the reference's own names. Contract: every pseudocode line a step can highlight must have at least one mapped line in each language; `src/topics/snippets.test.ts` runs every operation on its seed state and checks this. Comments inside snippets are prose and fall under Section 18.
 
 Every topic also ships a `structure.ts` (Section 7 `structure`): the ADT operations with signatures in the Java snippet's shape, costs quoted from the week reference, invariants, and one declaration per representation naming the class and node fields the snippets use. Algorithm topics (Sections 10.5 and 10.9) leave the operation table empty and say so in the summary. The B-tree entry follows Section 10.12 (a node holds up to `M` entries and splits at `M`), not the reference's `M - 1` phrasing. `src/topics/structure.test.ts` checks every module: one representation per variant value (or `default` alone), every operation id covered exactly once by `operationIds` or `algorithms`, scalar live fields on the seed and on every step of every seed operation, and the Section 18 floor on every string.
 
@@ -287,14 +289,14 @@ type BSTState = BSTSnapshot; // the tree persists as-is between operations
 **Operation: Insert**
 
 ```
-1  INSERT(root, key):
-2    if root is EMPTY:
+1  INSERT(node, key):
+2    if node is EMPTY:
 3      return NEW_NODE(key)
-4    if key < root.key:
-5      root.left = INSERT(root.left, key)
-6    else if key > root.key:
-7      root.right = INSERT(root.right, key)
-8    return root
+4    if key < node.key:
+5      node.left = INSERT(node.left, key)
+6    else if key > node.key:
+7      node.right = INSERT(node.right, key)
+8    return node
 ```
 
 | Trigger | Line | Description template | Snapshot delta |
@@ -307,11 +309,11 @@ type BSTState = BSTSnapshot; // the tree persists as-is between operations
 **Operation: Search**
 
 ```
-1  SEARCH(root, key):
-2    if root is EMPTY: return MISS
-3    if key == root.key: return HIT
-4    if key < root.key: return SEARCH(root.left, key)
-5    else: return SEARCH(root.right, key)
+1  SEARCH(node, key):
+2    if node is EMPTY: return MISS
+3    if key == node.key: return HIT
+4    if key < node.key: return SEARCH(node.left, key)
+5    else: return SEARCH(node.right, key)
 ```
 
 Step table follows the same descend pattern as Insert (lines 4–5), ending in either a `"found"`-highlighted hit at line 3 (*"`{key}` matches this node: HIT."*) or a miss narration at line 2 (*"Reached an empty link: MISS. `{key}` is not in the tree."*).
@@ -319,18 +321,18 @@ Step table follows the same descend pattern as Insert (lines 4–5), ending in e
 **Operation: Delete (Hibbard deletion)**
 
 ```
-1  DELETE(root, key):
-2    if root is EMPTY: return EMPTY
-3    if key < root.key: root.left = DELETE(root.left, key)
-4    else if key > root.key: root.right = DELETE(root.right, key)
+1  DELETE(node, key):
+2    if node is EMPTY: return EMPTY
+3    if key < node.key: node.left = DELETE(node.left, key)
+4    else if key > node.key: node.right = DELETE(node.right, key)
 5    else:
-6      if root.right is EMPTY: return root.left
-7      if root.left is EMPTY: return root.right
-8      successor = MIN(root.right)
-9      successor.right = DELETE_MIN(root.right)
-10     successor.left = root.left
-11     root = successor
-12   return root
+6      if node.right is EMPTY: return node.left
+7      if node.left is EMPTY: return node.right
+8      successor = MIN(node.right)
+9      successor.right = DELETE_MIN(node.right)
+10     successor.left = node.left
+11     node = successor
+12   return node
 ```
 
 | Trigger | Line | Description |
@@ -382,13 +384,13 @@ type HeapState = HeapSnapshot;
 
 ```
 1  INSERT(value):
-2    n = n + 1
-3    array[n] = value
-4    SWIM(n)
-5  SWIM(k):
-6    while k > 1 and array[k/2] < array[k]:
-7      SWAP(k, k/2)
-8      k = k/2
+2    size = size + 1
+3    heap[size] = value
+4    SWIM(size)
+5  SWIM(index):
+6    while index > 1 and heap[index / 2] < heap[index]:
+7      SWAP(index, index / 2)
+8      index = index / 2
 ```
 
 | Trigger | Line | Description |
@@ -401,19 +403,19 @@ type HeapState = HeapSnapshot;
 **Operation: Remove-max (or Remove-min)**
 
 ```
-1  REMOVE_EXTREME():
-2    extreme = array[1]
-3    SWAP(1, n)
-4    n = n - 1
+1  REMOVE_TOP():
+2    top = heap[1]
+3    SWAP(1, size)
+4    size = size - 1
 5    SINK(1)
-6    return extreme
-7  SINK(k):
-8    while 2k <= n:
-9      j = 2k
-10     if j < n and array[j] < array[j+1]: j = j + 1
-11     if array[k] >= array[j]: break
-12     SWAP(k, j)
-13     k = j
+6    return top
+7  SINK(index):
+8    while 2 * index <= size:
+9      child = 2 * index
+10     if child < size and heap[child] < heap[child + 1]: child = child + 1
+11     if heap[index] >= heap[child]: break
+12     SWAP(index, child)
+13     index = child
 ```
 
 | Trigger | Line | Description |
@@ -428,17 +430,17 @@ The final snapshot truncates the array to `n`. The operation is listed as **Remo
 **Operation: Build-heap (from a custom/random array)**
 
 ```
-1  BUILD_HEAP(a):
-2    array = a; n = length(a)
-3    for k = n/2 downto 1:
-4      SINK(k)
-5  SINK(k):
-6    while 2k <= n:
-7      j = 2k
-8      if j < n and array[j] < array[j+1]: j = j + 1
-9      if array[k] >= array[j]: break
-10     SWAP(k, j)
-11     k = j
+1  BUILD_HEAP(items):
+2    heap = items; size = length(items)
+3    for index = size / 2 downto 1:
+4      SINK(index)
+5  SINK(index):
+6    while 2 * index <= size:
+7      child = 2 * index
+8      if child < size and heap[child] < heap[child + 1]: child = child + 1
+9      if heap[index] >= heap[child]: break
+10     SWAP(index, child)
+11     index = child
 ```
 
 | Trigger | Line | Description |
@@ -452,19 +454,19 @@ Each iteration of line 3–4 emits the full SINK step sequence for that `k`, so 
 **Operation: Heapsort**
 
 ```
-1  HEAPSORT(a):
-2    BUILD_HEAP(a)
-3    while n > 1:
-4      SWAP(1, n)
-5      n = n - 1
+1  HEAPSORT(items):
+2    BUILD_HEAP(items)
+3    while size > 1:
+4      SWAP(1, size)
+5      size = size - 1
 6      SINK(1)
-7  SINK(k):
-8    while 2k <= n:
-9      j = 2k
-10     if j < n and array[j] < array[j+1]: j = j + 1
-11     if array[k] >= array[j]: break
-12     SWAP(k, j)
-13     k = j
+7  SINK(index):
+8    while 2 * index <= size:
+9      child = 2 * index
+10     if child < size and heap[child] < heap[child + 1]: child = child + 1
+11     if heap[index] >= heap[child]: break
+12     SWAP(index, child)
+13     index = child
 ```
 
 | Trigger | Line | Description |
@@ -498,16 +500,16 @@ type HashTableState = HashTableSnapshot;
 
 ```
 1  CHAIN_INSERT(key):
-2    i = HASH(key)
-3    if key not in bucket[i]: append key to bucket[i]
+2    index = HASH(key)
+3    if key not in buckets[index]: append key to buckets[index]
 
 4  CHAIN_SEARCH(key):
-5    i = HASH(key)
-6    return key in bucket[i]
+5    index = HASH(key)
+6    return key in buckets[index]
 
 7  CHAIN_DELETE(key):
-8    i = HASH(key)
-9    remove key from bucket[i] if present
+8    index = HASH(key)
+9    remove key from buckets[index] if present
 ```
 
 Operation ids are `chain-insert`, `chain-search`, `chain-delete` (`variants: ["chaining"]`), labeled Insert, Search, Delete.
@@ -527,23 +529,23 @@ Operation ids are `chain-insert`, `chain-search`, `chain-delete` (`variants: ["c
 
 ```
 1  PROBE_INSERT(key):
-2    i = HASH(key)
-3    while slot[i] is occupied and slot[i] != key:
-4      i = (i + 1) mod M
-5    slot[i] = key
+2    index = HASH(key)
+3    while keys[index] is not empty and keys[index] != key:
+4      index = (index + 1) mod M
+5    keys[index] = key
 
 6  PROBE_SEARCH(key):
-7    i = HASH(key)
-8    while slot[i] is occupied:
-9      if slot[i] == key: return HIT
-10     i = (i + 1) mod M
+7    index = HASH(key)
+8    while keys[index] is not empty:
+9      if keys[index] == key: return HIT
+10     index = (index + 1) mod M
 11   return MISS
 
 12 PROBE_DELETE(key):
-13   i = HASH(key); probe until slot[i] == key or slot[i] is empty
-14   if slot[i] is empty: return MISS
-15   slot[i] = EMPTY
-16   for each key in the cluster after i: remove it and PROBE_INSERT it again
+13   index = HASH(key); probe until keys[index] == key or keys[index] is empty
+14   if keys[index] is empty: return MISS
+15   keys[index] = EMPTY
+16   for each key in the cluster after index: remove it and PROBE_INSERT it again
 ```
 
 Operation ids are `probe-insert`, `probe-search`, `probe-delete` (`variants: ["probing"]`), labeled Insert, Search, Delete. The three listings above are one block so line numbers are unique.
@@ -588,11 +590,11 @@ type GraphState = GraphSnapshot;
 1  BFS(source):
 2    mark source visited; enqueue source
 3    while queue not empty:
-4      v = dequeue()
-5      for each w adjacent to v:
-6        if w not visited:
-7          mark w visited; edgeTo[w] = v
-8          enqueue w
+4      vertex = dequeue()
+5      for each neighbor adjacent to vertex:
+6        if neighbor not visited:
+7          mark neighbor visited; edgeTo[neighbor] = vertex
+8          enqueue neighbor
 ```
 
 | Trigger | Line | Description |
@@ -609,12 +611,12 @@ type GraphState = GraphSnapshot;
 **Operation: DFS**
 
 ```
-1  DFS(v):
-2    mark v visited
-3    for each w adjacent to v:
-4      if w not visited:
-5        edgeTo[w] = v
-6        DFS(w)
+1  DFS(vertex):
+2    mark vertex visited
+3    for each neighbor adjacent to vertex:
+4      if neighbor not visited:
+5        edgeTo[neighbor] = vertex
+6        DFS(neighbor)
 ```
 
 | Trigger | Line | Description |
@@ -632,10 +634,10 @@ type GraphState = GraphSnapshot;
 ```
 1  CONNECTED_COMPONENTS():
 2    count = 0
-3    for each vertex v:
-4      if v not visited:
+3    for each vertex:
+4      if vertex not visited:
 5        count = count + 1
-6        DFS(v), assigning component = count to every reached vertex
+6        DFS(vertex), assigning component = count to every reached vertex
 ```
 
 Runs the DFS step sequence per component, tagging `vertex.component` and using a distinct highlight color per component index. Line 4 narrates each start: "`{v}` is unvisited, so it starts component `{count}`." The final step (line 3, after the loop) narrates "Found `{count}` connected components."
@@ -644,9 +646,9 @@ Runs the DFS step sequence per component, tagging `vertex.component` and using a
 
 ```
 1  TOPOLOGICAL_SORT():
-2    for each vertex v:
-3      if v not visited:
-4        DFS_POSTORDER(v)   // pushes v onto a stack after visiting all its descendants
+2    for each vertex:
+3      if vertex not visited:
+4        DFS_POSTORDER(vertex)   // pushes vertex onto a stack after visiting all its descendants
 5    return REVERSE(postorder stack)
 ```
 
@@ -656,10 +658,10 @@ Runs the DFS steps; each finish is a line-4 step: "Finished `{v}`. Pushing it on
 
 ```
 1  KOSARAJU_SHARIR():
-2    order = REVERSE_POSTORDER(REVERSE(G))
-3    for each vertex v in order:
-4      if v not visited:
-5        DFS(v) in G, assigning the same component id to every reached vertex
+2    order = REVERSE_POSTORDER(REVERSE(graph))
+3    for each vertex in order:
+4      if vertex not visited:
+5        DFS(vertex) in graph, assigning the same component id to every reached vertex
 ```
 
 Two-phase animation: first show the reverse-postorder computation on the reversed graph (dimmed/secondary), then the main DFS pass on the original graph assigning component colors. Phase 1 reuses the Topological Sort steps (all on line 2, with `variables.phase = "reversed graph"` so the canvas draws edges reversed and dimmed) and ends with "Reverse postorder of the reversed graph: `{list}`." Phase 2 narrates each start on line 5: "`{v}` starts strong component `{count}`." followed by DFS steps on the original graph, and ends with "Found `{count}` strong components."
@@ -689,11 +691,11 @@ type ComplexityState = ComplexitySnapshot;
 
 ```
 1  DOUBLING_RATIO(problem):
-2    prev = 0
+2    previous = 0
 3    for N = start, 2 * start, 4 * start, ... (6 rounds):
 4      accesses = ACCESSES(problem, N)
-5      ratio = accesses / prev
-6      prev = accesses
+5      ratio = accesses / previous
+6      previous = accesses
 7  ACCESSES(problem, N):
 8    1-sum: N items, 1 access each
 9    2-sum: N(N-1)/2 pairs, 2 accesses each
@@ -731,36 +733,36 @@ type ArraysState = ArraysSnapshot;
 
 ```
 1  CREATE(values):
-2    a = new int[N]
-3    for i = 0 to N - 1: a[i] = values[i]
+2    items = new int[N]
+3    for i = 0 to N - 1: items[i] = values[i]
 ```
 
 ```
-1  ACCESS(i):
-2    if i < 0 or i >= N: OUT_OF_BOUNDS
-3    return a[i]
+1  ACCESS(index):
+2    if index < 0 or index >= N: OUT_OF_BOUNDS
+3    return items[index]
 ```
 
 ```
-1  SET(i, v):
-2    if i < 0 or i >= N: OUT_OF_BOUNDS
-3    a[i] = v
+1  SET(index, value):
+2    if index < 0 or index >= N: OUT_OF_BOUNDS
+3    items[index] = value
 ```
 
 ```
 1  RESIZE():
-2    copy = new int[2 * N]
-3    for i = 0 to N - 1: copy[i] = a[i]
-4    a = copy
+2    resized = new int[2 * N]
+3    for i = 0 to N - 1: resized[i] = items[i]
+4    items = resized
 ```
 
 ```
-1  MEMORY(a):
+1  MEMORY(items):
 2    header = 16 + 4 + 4 = 24 bytes
 3    return 24 + 4 * N
 ```
 
-Operation ids are `create` (Create from list, `inputKind: "array"`), `access` (Access a[i], `inputKind: "key"`, placeholder `Index, e.g. 2`), `set` (Set a[i] = v, `inputKind: "array"` with exactly two numbers, placeholder `index, value, e.g. 2, 7`), `resize` (Resize to double, `inputKind: "none"`), `memory` (Memory cost, `inputKind: "none"`).
+Operation ids are `create` (Create from list, `inputKind: "array"`), `access` (Access items[index], `inputKind: "key"`, placeholder `Index, e.g. 2`), `set` (Set items[index] = value, `inputKind: "array"` with exactly two numbers, placeholder `index, value, e.g. 2, 7`), `resize` (Resize to double, `inputKind: "none"`), `memory` (Memory cost, `inputKind: "none"`).
 
 | Operation | Line | Description | Highlight |
 |---|---|---|---|
@@ -769,13 +771,13 @@ Operation ids are `create` (Create from list, `inputKind: "array"`), `access` (A
 | create | 3 | "Filling the slots from the list: `{list}`." | all `write` |
 | access / set, bad index | 2 | "Index `{i}` is outside 0 to `{N-1}`, so the program stops with an out-of-bounds error." | all `error`, stop |
 | access / set, good index | 2 | "Index `{i}` is inside 0 to `{N-1}`, so the access is safe." | `[i]` `read` |
-| access | 3 | "a[`{i}`] holds `{v}`." | `[i]` `read` |
+| access | 3 | "items[`{i}`] holds `{v}`." | `[i]` `read` |
 | set, wrong count | 1 | "Set needs two numbers, an index and a value, and `{k}` were entered, so nothing changes." (`was` for 1) | none |
-| set | 3 | "Writing `{v}` into a[`{i}`], replacing `{old}`." | `[i]` `write` |
+| set | 3 | "Writing `{v}` into items[`{i}`], replacing `{old}`." | `[i]` `write` |
 | resize | 2 | "Creating a new array of length `{2N}`: every slot starts at 0." | `resizing` row appears |
 | resize, over the cap | 2 | "Doubling would need `{2N}` slots and this demo shows at most 16, so nothing changes." | none |
-| resize, per element | 3 | "Copying a[`{i}`] = `{v}` into the new array." | `[i]` `copy` on both rows |
-| resize | 4 | "The new array replaces the old one, so a has `{2N}` slots and the old array can be reclaimed." | `resizing` cleared |
+| resize, per element | 3 | "Copying items[`{i}`] = `{v}` into the new array." | `[i]` `copy` on both rows |
+| resize | 4 | "The new array replaces the old one, so items has `{2N}` slots and the old array can be reclaimed." | `resizing` cleared |
 | memory | 2 | "An int array carries a 24-byte header: 16 bytes of object overhead, 4 bytes for the length, and 4 bytes of padding." | none |
 | memory | 3 | "The `{N}` ints take 4 bytes each, so int[`{N}`] costs 24 + 4 * `{N}` = `{bytes}` bytes." | all `read` |
 
@@ -814,20 +816,20 @@ Linked snapshots store real links rather than an ordered list, because "create t
 
 ```
 1  ENQUEUE(item):
-2    if n == q.length: RESIZE(2 * q.length)
-3    q[last] = item; last = last + 1
-4    if last == q.length: last = 0
-5    n = n + 1
+2    if size == items.length: RESIZE(2 * items.length)
+3    items[last] = item; last = last + 1
+4    if last == items.length: last = 0
+5    size = size + 1
 6  DEQUEUE():
-7    item = q[first]; q[first] = null; n = n - 1
+7    item = items[first]; items[first] = null; size = size - 1
 8    first = first + 1
-9    if first == q.length: first = 0
-10   if n > 0 and n == q.length / 4: RESIZE(q.length / 2)
+9    if first == items.length: first = 0
+10   if size > 0 and size == items.length / 4: RESIZE(items.length / 2)
 11   return item
 12 RESIZE(capacity):
-13   copy = new array[capacity]
-14   for i = 0 to n - 1: copy[i] = q[(first + i) mod q.length]
-15   q = copy; first = 0; last = n
+13   resized = new array[capacity]
+14   for i = 0 to size - 1: resized[i] = items[(first + i) mod items.length]
+15   items = resized; first = 0; last = size
 ```
 
 Operation ids are `array-enqueue` (Enqueue, `inputKind: "key"`) and `array-dequeue` (Dequeue, `inputKind: "none"`), both `variants: ["array"]`, sharing the listing above.
@@ -851,15 +853,15 @@ Operation ids are `array-enqueue` (Enqueue, `inputKind: "key"`) and `array-deque
 
 ```
 1  ENQUEUE(item):
-2    oldlast = last
+2    oldLast = last
 3    last = NODE(item); last.next = null
 4    if isEmpty(): first = last
-5    else: oldlast.next = last
-6    n = n + 1
+5    else: oldLast.next = last
+6    size = size + 1
 7  DEQUEUE():
 8    item = first.item
 9    first = first.next
-10   n = n - 1
+10   size = size - 1
 11   if isEmpty(): last = null
 12   return item
 ```
@@ -906,22 +908,22 @@ type StackSnapshot = ArrayStackSnapshot | LinkedStackSnapshot;
 type StackState = StackSnapshot;
 ```
 
-**Canvas layout:** as the queue, with a single pointer label: `top` at index `n-1` in the array, `first` in the list (the name the code uses). When `eval` is set the canvas shows the token strip with the cursor marked, above two columns labeled operands and operators. Capacity is capped at 32 slots.
+**Canvas layout:** as the queue, with a single pointer label: `top` at index `size-1` in the array and on the first node in the list (the name the code uses, ADR-014). When `eval` is set the canvas shows the token strip with the cursor marked, above two columns labeled operands and operators. Capacity is capped at 32 slots.
 
 **Operations: Resizing array** (`ResizingArrayStack`)
 
 ```
 1  PUSH(item):
-2    if n == a.length: RESIZE(2 * a.length)
-3    a[n] = item; n = n + 1
+2    if size == items.length: RESIZE(2 * items.length)
+3    items[size] = item; size = size + 1
 4  POP():
-5    item = a[n - 1]; a[n - 1] = null; n = n - 1
-6    if n > 0 and n == a.length / 4: RESIZE(a.length / 2)
+5    item = items[size - 1]; items[size - 1] = null; size = size - 1
+6    if size > 0 and size == items.length / 4: RESIZE(items.length / 2)
 7    return item
 8  RESIZE(capacity):
-9    copy = new array[capacity]
-10   for i = 0 to n - 1: copy[i] = a[i]
-11   a = copy
+9    resized = new array[capacity]
+10   for i = 0 to size - 1: resized[i] = items[i]
+11   items = resized
 ```
 
 Operation ids are `array-push` (Push, `inputKind: "key"`) and `array-pop` (Pop, `inputKind: "none"`), `variants: ["array"]`.
@@ -942,14 +944,14 @@ Operation ids are `array-push` (Push, `inputKind: "key"`) and `array-pop` (Pop, 
 
 ```
 1  PUSH(item):
-2    oldfirst = first
-3    first = NODE(item)
-4    first.next = oldfirst
-5    n = n + 1
+2    oldTop = top
+3    top = NODE(item)
+4    top.next = oldTop
+5    size = size + 1
 6  POP():
-7    item = first.item
-8    first = first.next
-9    n = n - 1
+7    item = top.item
+8    top = top.next
+9    size = size - 1
 10   return item
 ```
 
@@ -957,13 +959,13 @@ Operation ids are `linked-push` and `linked-pop`, `variants: ["linked"]`.
 
 | Trigger | Line | Description | Highlight |
 |---|---|---|---|
-| Create | 3 | "Creating a node for `{item}`: first now points at it." | `new`, detached |
-| Link | 4 | "Linking `{item}` to the old first node `{old}`: the stack holds `{n}` items." | `[new, old]` `current` |
-| Link, was empty | 4 | "There was no old first node, so `{item}` is the only node: the stack holds 1 item." | `new` |
+| Create | 3 | "Creating a node for `{item}`: top now points at it." | `new`, detached |
+| Link | 4 | "Linking `{item}` to the old top node `{old}`: the stack holds `{n}` items." | `[new, old]` `current` |
+| Link, was empty | 4 | "There was no old top node, so `{item}` is the only node: the stack holds 1 item." | `new` |
 | Pop, empty | 7 | "The stack is empty, so there is nothing to pop." | none, stop |
-| Take | 7 | "Taking `{item}` from first." | `[first]` `current` |
-| Advance | 8 | "first moves to `{next}`: the stack holds `{n-1}` items." | old node removed |
-| Advance, now empty | 8 | "first becomes null: the stack is empty." | old node removed |
+| Take | 7 | "Taking `{item}` from top." | `[first]` `current` |
+| Advance | 8 | "top moves to `{next}`: the stack holds `{n-1}` items." | old node removed |
+| Advance, now empty | 8 | "top becomes null: the stack is empty." | old node removed |
 
 **Operation: Evaluate expression** (Dijkstra's two-stack algorithm, `Evaluate.java`)
 
@@ -971,12 +973,12 @@ Operation ids are `linked-push` and `linked-pop`, `variants: ["linked"]`.
 1  EVALUATE(tokens):
 2    for each token in tokens:
 3      if token is "(": skip it
-4      else if token is an operator: ops.push(token)
+4      else if token is an operator: operators.push(token)
 5      else if token is ")":
-6        op = ops.pop(); b = vals.pop(); a = vals.pop()
-7        vals.push(APPLY(a, op, b))
-8      else: vals.push(NUMBER(token))
-9    return vals.pop()
+6        operator = operators.pop(); right = operands.pop(); left = operands.pop()
+7        operands.push(APPLY(left, operator, right))
+8      else: operands.push(NUMBER(token))
+9    return operands.pop()
 ```
 
 Operation id `evaluate` (Evaluate expression, `inputKind: "text"`, placeholder `( 1 + ( 2 * 3 ) )`, no `variants`, so it is visible in both modes). Operators are `+ - * /`. The tokenizer accepts spaced and unspaced input (`/\d+(?:\.\d+)?|[()+\-*/]|\S+/g`); a non-integer result prints with two decimals. Every step's snapshot carries `eval`; the `finalSnapshot` is the input state untouched, so the demo never changes the student's stack. The two stacks inside `eval` are not resized or narrated as stacks: the algorithm is a client of the stack API, and simulating resizes here would only add noise. `variables`: `operands`, `operators`.
@@ -1011,7 +1013,7 @@ interface SortingSnapshot {
 type SortingState = SortingSnapshot;
 ```
 
-`marked` covers selection sort's current minimum and the item insertion sort and shellsort are placing. Every sort step carries `variables.compares` and `variables.exchanges`, and shellsort adds `variables.h`.
+`marked` covers selection sort's current minimum and the item insertion sort and shellsort are placing. Every sort step carries `variables.compares` and `variables.exchanges`, and shellsort adds `variables.gap`.
 
 **Canvas layout:** the shared `ArrayRow`; the `sortedUpTo` prefix is drawn muted, the highlight kinds in the accent, secondary, and destructive colors. The array holds 2 to 10 items so the longest run (selection sort on 10 items) stays near 60 steps.
 
@@ -1019,36 +1021,36 @@ type SortingState = SortingSnapshot;
 
 ```
 1  LOAD(values):
-2    a = values; N = length(a)
+2    items = values; N = length(items)
 ```
 
 ```
-1  SELECTION_SORT(a):
+1  SELECTION_SORT(items):
 2    for i = 0 to N - 1:
-3      min = i
+3      minIndex = i
 4      for j = i + 1 to N - 1:
-5        if LESS(a[j], a[min]): min = j
-6      EXCH(a, i, min)
+5        if LESS(items[j], items[minIndex]): minIndex = j
+6      EXCHANGE(items, i, minIndex)
 ```
 
 ```
-1  INSERTION_SORT(a):
+1  INSERTION_SORT(items):
 2    for i = 1 to N - 1:
 3      for j = i downto 1:
-4        if LESS(a[j], a[j-1]): EXCH(a, j, j-1)
+4        if LESS(items[j], items[j - 1]): EXCHANGE(items, j, j - 1)
 5        else: break
 ```
 
 ```
-1  SHELLSORT(a):
-2    h = 1
-3    while h < N / 3: h = 3 * h + 1
-4    while h >= 1:
-5      for i = h to N - 1:
-6        for j = i; j >= h; j = j - h:
-7          if LESS(a[j], a[j-h]): EXCH(a, j, j-h)
+1  SHELLSORT(items):
+2    gap = 1
+3    while gap < N / 3: gap = 3 * gap + 1
+4    while gap >= 1:
+5      for i = gap to N - 1:
+6        for j = i; j >= gap; j = j - gap:
+7          if LESS(items[j], items[j - gap]): EXCHANGE(items, j, j - gap)
 8          else: break
-9      h = h / 3
+9      gap = gap / 3
 ```
 
 Operation ids are `load` (Load array, `inputKind: "array"`, placeholder `e.g. 7, 3, 9, 1`), `selection-sort` (Selection sort), `insertion-sort` (Insertion sort), `shellsort` (Shellsort), the last three `inputKind: "none"` acting on the current array. Selection sort emits one step per compare and one per exchange (they are separate lines); insertion sort and shellsort merge the compare and the exchange into one step because they sit on one line.
@@ -1057,24 +1059,24 @@ Operation ids are `load` (Load array, `inputKind: "array"`, placeholder `e.g. 7,
 |---|---|---|---|
 | load | 2 | "Loading `{list}`: `{N}` items to sort." | none |
 | load, outside 2 to 10 | 2 | "This demo sorts 2 to 10 items, and `{N}` were entered, so nothing changes." | none |
-| selection, new pass | 3 | "Pass `{i}`: the smallest item so far is a[`{i}`] = `{v}`." | `[i]` `marked`, `sortedUpTo = i` |
-| selection, min stays | 5 | "Comparing a[`{j}`] = `{x}` with the minimum a[`{min}`] = `{m}`: `{m}` is smaller, so min stays `{min}`." | `[j, min]` `comparing` |
-| selection, new min | 5 | "Comparing a[`{j}`] = `{x}` with the minimum a[`{min}`] = `{m}`: `{x}` is smaller, so min becomes `{j}`." | `[j]` `marked` |
-| selection, exchange | 6 | "Exchanging a[`{i}`] = `{v}` with a[`{min}`] = `{m}`, so `{m}` is in its final position." | `[i, min]` `exchanging`, `sortedUpTo = i + 1` |
-| selection, self exchange | 6 | "a[`{i}`] = `{v}` is already the minimum, so exchanging it with itself changes nothing." | `[i]` `sorted`; still counted, so the total is exactly N exchanges |
+| selection, new pass | 3 | "Pass `{i}`: the smallest item so far is items[`{i}`] = `{v}`." | `[i]` `marked`, `sortedUpTo = i` |
+| selection, min stays | 5 | "Comparing items[`{j}`] = `{x}` with the minimum items[`{min}`] = `{m}`: `{m}` is smaller, so minIndex stays `{min}`." | `[j, min]` `comparing` |
+| selection, new min | 5 | "Comparing items[`{j}`] = `{x}` with the minimum items[`{min}`] = `{m}`: `{x}` is smaller, so minIndex becomes `{j}`." | `[j]` `marked` |
+| selection, exchange | 6 | "Exchanging items[`{i}`] = `{v}` with items[`{min}`] = `{m}`, so `{m}` is in its final position." | `[i, min]` `exchanging`, `sortedUpTo = i + 1` |
+| selection, self exchange | 6 | "items[`{i}`] = `{v}` is already the minimum, so exchanging it with itself changes nothing." | `[i]` `sorted`; still counted, so the total is exactly N exchanges |
 | selection, done | 2 | "Every item is in place: `{compares}` compares and `{exchanges}` exchanges." | all `sorted` |
-| insertion, take | 2 | "Taking a[`{i}`] = `{v}` and inserting it among the `{i}` sorted items to its left." | `[i]` `marked` |
-| insertion, exchange | 4 | "a[`{j}`] = `{x}` is smaller than a[`{j-1}`] = `{y}`, so exchange them." | `[j, j-1]` `exchanging`, after the exchange |
-| insertion, stop | 5 | "a[`{j}`] = `{x}` is not smaller than a[`{j-1}`] = `{y}`, so it stays: a[0..`{i}`] is sorted." | `[j, j-1]` `comparing`, `sortedUpTo = i + 1` |
-| insertion, reached 0 | 3 | "`{x}` reached index 0, so a[0..`{i}`] is sorted." | `sortedUpTo = i + 1` |
+| insertion, take | 2 | "Taking items[`{i}`] = `{v}` and inserting it among the `{i}` sorted items to its left." | `[i]` `marked` |
+| insertion, exchange | 4 | "items[`{j}`] = `{x}` is smaller than items[`{j-1}`] = `{y}`, so exchange them." | `[j, j-1]` `exchanging`, after the exchange |
+| insertion, stop | 5 | "items[`{j}`] = `{x}` is not smaller than items[`{j-1}`] = `{y}`, so it stays: items[0..`{i}`] is sorted." | `[j, j-1]` `comparing`, `sortedUpTo = i + 1` |
+| insertion, reached 0 | 3 | "`{x}` reached index 0, so items[0..`{i}`] is sorted." | `sortedUpTo = i + 1` |
 | insertion, done | 2 | "Every item is in place: `{compares}` compares and `{exchanges}` exchanges." | all `sorted` |
-| shellsort, increment | 3 | "N = `{N}`, so the increment sequence starts at h = `{h}`." | none |
-| shellsort, pass | 4 | "h-sorting the array with h = `{h}`: every h-th item forms one subsequence." | none |
-| shellsort, take | 5 | "Taking a[`{i}`] = `{v}` and inserting it among the items `{h}` apart to its left." | `[i, i-h, i-2h, ...]` `marked` |
-| shellsort, exchange | 7 | "a[`{j}`] = `{x}` is smaller than a[`{j-h}`] = `{y}`, `{h}` positions to its left, so exchange them." | `[j, j-h]` `exchanging` |
-| shellsort, stop | 8 | "a[`{j}`] = `{x}` is not smaller than a[`{j-h}`] = `{y}`, so it stays." | `[j, j-h]` `comparing` |
-| shellsort, next h | 9 | "The array is `{h}`-sorted, so h becomes `{h/3}`." | none |
-| shellsort, done | 4 | "h is 0, so the array is sorted: `{compares}` compares and `{exchanges}` exchanges." | all `sorted` |
+| shellsort, increment | 3 | "N = `{N}`, so the gap sequence starts at gap = `{gap}`." | none |
+| shellsort, pass | 4 | "Sorting with gap = `{gap}`: items `{gap}` apart form one subsequence." | none |
+| shellsort, take | 5 | "Taking items[`{i}`] = `{v}` and inserting it among the items `{gap}` apart to its left." | `[i, i-gap, i-2gap, ...]` `marked` |
+| shellsort, exchange | 7 | "items[`{j}`] = `{x}` is smaller than items[`{j-gap}`] = `{y}`, `{gap}` positions to its left, so exchange them." | `[j, j-gap]` `exchanging` |
+| shellsort, stop | 8 | "items[`{j}`] = `{x}` is not smaller than items[`{j-gap}`] = `{y}`, so it stays." | `[j, j-gap]` `comparing` |
+| shellsort, next gap | 9 | "Items `{gap}` apart are in order, so gap becomes `{gap/3}`." | none |
+| shellsort, done | 4 | "gap is 0, so the array is sorted: `{compares}` compares and `{exchanges}` exchanges." | all `sorted` |
 
 With N in 4 to 12 the increment loop picks h = 4 then 1, so every seed shows two passes. Seed: `7, 10, 5, 3, 8, 4, 2, 9, 6`. Randomize: 7 to 9 unique values in 1 to 99.
 
@@ -1098,18 +1100,18 @@ type LinkedListState = LinkedListSnapshot;
 
 ```
 1  INSERT_FIRST(item):
-2    oldfirst = first
+2    oldFirst = first
 3    first = NODE(item)
-4    first.next = oldfirst
-5    if oldfirst is null: last = first
+4    first.next = oldFirst
+5    if oldFirst is null: last = first
 ```
 
 ```
 1  INSERT_LAST(item):
-2    oldlast = last
+2    oldLast = last
 3    last = NODE(item)
-4    if oldlast is null: first = last
-5    else: oldlast.next = last
+4    if oldLast is null: first = last
+5    else: oldLast.next = last
 ```
 
 ```
@@ -1123,8 +1125,8 @@ type LinkedListState = LinkedListSnapshot;
 
 ```
 1  TRAVERSE():
-2    for x = first; x is not null; x = x.next:
-3      VISIT(x.item)
+2    for node = first; node is not null; node = node.next:
+3      VISIT(node.item)
 ```
 
 Operation ids are `insert-first` (Insert at the beginning, `inputKind: "key"`), `insert-last` (Insert at the end, `inputKind: "key"`), `remove-first` (Remove from the beginning, `inputKind: "none"`), `traverse` (Traverse, `inputKind: "none"`).
@@ -1144,7 +1146,7 @@ Operation ids are `insert-first` (Insert at the beginning, `inputKind: "key"`), 
 | remove-first, now empty | 5 | "first is null, so last is null too: the list is empty." | none |
 | traverse, empty | 2 | "The list is empty, so there is nothing to visit." | none |
 | traverse, visit | 3 | "Visit `{item}`. Visited so far: `{list}`." | x `current`, earlier nodes `visited`; `variables.visited` |
-| traverse, end | 2 | "x is null, so the traversal ends after `{n}` nodes." | all `visited` |
+| traverse, end | 2 | "node is null, so the traversal ends after `{n}` nodes." | all `visited` |
 
 Seed: `4, 8, 15, 16`. Randomize: 3 to 6 unique values in 1 to 99.
 
@@ -1173,19 +1175,19 @@ type SearchingState = SearchingSnapshot;
 
 **Values:** the input is a key. `put` stores 1 for a new key and `value + 1` for an existing key, the `FrequencyCounter` client's behavior, so the "one value per key, a repeat put replaces it" convention is visible without inventing values.
 
-**Canvas layout:** the sequential variant is the shared `LinkedRow` with the key in each box and the value as a sublabel. The binary variant is the shared `ArrayRow` with cells outside `range` muted and `lo`, `mid`, `hi` pointer labels. The binary table holds at most 16 keys; it does not model a resizing array.
+**Canvas layout:** the sequential variant is the shared `LinkedRow` with the key in each box and the value as a sublabel. The binary variant is the shared `ArrayRow` with cells outside `range` muted and `low`, `middle`, `high` pointer labels. The binary table holds at most 16 keys; it does not model a resizing array.
 
 **Operations: Sequential search** (`SequentialSearchST`)
 
 ```
 1  GET(key):
-2    for x = first; x is not null; x = x.next:
-3      if key == x.key: return x.val
+2    for node = first; node is not null; node = node.next:
+3      if key == node.key: return node.value
 4    return null
-5  PUT(key, val):
-6    for x = first; x is not null; x = x.next:
-7      if key == x.key: x.val = val; return
-8    first = NODE(key, val, first)
+5  PUT(key, value):
+6    for node = first; node is not null; node = node.next:
+7      if key == node.key: node.value = value; return
+8    first = NODE(key, value, first)
 ```
 
 Operation ids are `seq-get` (Get, `inputKind: "key"`) and `seq-put` (Put, `inputKind: "key"`), `variants: ["sequential"]`.
@@ -1203,34 +1205,34 @@ Operation ids are `seq-get` (Get, `inputKind: "key"`) and `seq-put` (Put, `input
 
 ```
 1  GET(key):
-2    i = RANK(key)
-3    if i < n and keys[i] == key: return vals[i]
+2    rank = RANK(key)
+3    if rank < size and keys[rank] == key: return values[rank]
 4    return null
-5  PUT(key, val):
-6    i = RANK(key)
-7    if i < n and keys[i] == key: vals[i] = val; return
-8    for j = n downto i + 1: keys[j] = keys[j-1]; vals[j] = vals[j-1]
-9    keys[i] = key; vals[i] = val; n = n + 1
+5  PUT(key, value):
+6    rank = RANK(key)
+7    if rank < size and keys[rank] == key: values[rank] = value; return
+8    for j = size downto rank + 1: keys[j] = keys[j - 1]; values[j] = values[j - 1]
+9    keys[rank] = key; values[rank] = value; size = size + 1
 10 RANK(key):
-11   lo = 0; hi = n - 1
-12   while lo <= hi:
-13     mid = lo + (hi - lo) / 2
-14     if key < keys[mid]: hi = mid - 1
-15     else if key > keys[mid]: lo = mid + 1
-16     else: return mid
-17   return lo
+11   low = 0; high = size - 1
+12   while low <= high:
+13     middle = low + (high - low) / 2
+14     if key < keys[middle]: high = middle - 1
+15     else if key > keys[middle]: low = middle + 1
+16     else: return middle
+17   return low
 ```
 
 Operation ids are `bin-get` (Get) and `bin-put` (Put), `inputKind: "key"`, `variants: ["binary"]`. The three listings are one block so line numbers are unique.
 
 | Trigger | Line | Description | Highlight |
 |---|---|---|---|
-| Rank start (both) | 11 | "lo = 0 and hi = `{n-1}`: `{key}` can only be in this range." | `range` |
-| Rank probe | 13 | "mid = `{mid}`: comparing `{key}` with keys[`{mid}`] = `{k}`." | `[mid]` `mid`; `variables` lo, mid, hi, compares |
-| Rank, go left | 14 | "`{key}` < `{k}`, so hi becomes `{mid-1}`." | `range` shrinks |
-| Rank, go right | 15 | "`{key}` > `{k}`, so lo becomes `{mid+1}`." | `range` shrinks |
+| Rank start (both) | 11 | "low = 0 and high = `{n-1}`: `{key}` can only be in this range." | `range` |
+| Rank probe | 13 | "middle = `{mid}`: comparing `{key}` with keys[`{mid}`] = `{k}`." | `[mid]` `mid`; `variables` low, middle, high, compares |
+| Rank, go left | 14 | "`{key}` < `{k}`, so high becomes `{mid-1}`." | `range` shrinks |
+| Rank, go right | 15 | "`{key}` > `{k}`, so low becomes `{mid+1}`." | `range` shrinks |
 | Rank, equal | 16 | "`{key}` equals keys[`{mid}`], so rank is `{mid}`." | `[mid]` `found` |
-| Rank, exhausted | 17 | "lo passed hi, so rank is `{lo}`: `{lo}` keys are smaller than `{key}`." | `range` cleared |
+| Rank, exhausted | 17 | "low passed high, so rank is `{lo}`: `{lo}` keys are smaller than `{key}`." | `range` cleared |
 | Get hit | 3 | "keys[`{i}`] is `{key}`: HIT, its value is `{v}`." | `[i]` `found` |
 | Get miss, inside | 4 | "keys[`{i}`] is `{k}`, not `{key}`: MISS." | `[i]` `miss` |
 | Get miss, past the end | 4 | "Rank `{i}` is past the last key: MISS." | none |
@@ -1260,63 +1262,60 @@ interface BTreeSnapshot {
 type BTreeState = BTreeSnapshot;
 ```
 
-**Semantics:** `BTree.java` from the reference implementation, with two intentional deviations. Internal entries hold a key and a child link, the key being the smallest key of that child's subtree; external entries hold a key and its value. Descend into child `j` when `j + 1 == h.m` or `key < h.entry[j+1].key`. After an insertion, a node holding `M` entries splits: entries 0 and 1 stay, entries 2 and 3 move to a new node, and the parent receives a guide entry `(u.entry[0].key, u)` right after the child it descended into. A root split creates a two-entry root and increments `height`. Deviation 1: when a new minimum descends into child `j` with `key < h.entry[j].key` (only possible for `j = 0`), the guide key is rewritten to `key` (line 10). The reference implementation leaves it stale, which after a root split draws a node such as `20 | 20`, and a student reads that as a bug; keeping every guide key equal to its subtree's smallest key keeps the picture honest, and the Java snippet carries the same one extra line. Deviation 2: `put` of a key that is already present stops with a single step instead of storing a duplicate, because the reference text calls this a symbol table. Values are not visualized (the input is a key); the Java snippet keeps `val`. The tree holds at most 30 keys.
+**Semantics:** `BTree.java` from the reference implementation, with two intentional deviations, written as an iterative listing with descriptive names (ADR-014): `node.entries`, `entry.key`, `entry.value`, `entry.child`, `node.isLeaf`, and a `path` stack of the internal nodes passed on the way down, so a split walks back up without recursion. Internal entries hold a key and a child link, the key being the smallest key of that child's subtree; leaf entries hold a key and its value. Descend into child `i`, the last entry whose key is `<= key`, or entry 0 when `key` is smaller than every guide key. After an insertion, a node holding `M` entries splits: entries 0 and 1 stay, entries 2 and 3 move to a new `sibling`, and the parent receives a guide entry `(sibling.entries[0].key, sibling)` right after the child it descended into. A root split creates a two-entry root and increments `height`. Deviation 1: when a new minimum descends into child `i` with `key < node.entries[i].key` (only possible for `i = 0`), the guide key is rewritten to `key` (line 5). The reference implementation leaves it stale, which after a root split draws a node such as `20 | 20`, and a student reads that as a bug; keeping every guide key equal to its subtree's smallest key keeps the picture honest, and the C++, Java, and Python snippets carry the same line. Deviation 2: `put` of a key that is already present stops with a single step instead of storing a duplicate, because the reference text calls this a symbol table. Values are not visualized (the input is a key); the snippets keep `value`. The tree holds at most 30 keys.
 
 **Canvas layout:** an SVG. Each node is a horizontal run of `entries.length` key boxes (30 × 26), laid out by `layoutMultiwayTree` (`lib/layout/tree-layout.ts`): a post-order pass computes each subtree's width, children pack left to right, a parent centers over its children, `y = depth × vertical spacing`. Each internal entry draws a line from its bottom center to its child's top center. External nodes are filled; internal nodes are outlined. A node that has just split off and is not yet linked by its parent (`splitFrom`) is laid out with its subtree as its origin's next sibling, so the split step never draws a node, or the children it took, over another row. The viewBox is computed from the extents, as in 10.1.
 
 **Operation: Get**
 
 ```
-1  GET(key): return SEARCH(root, key, height)
-2  SEARCH(x, key, ht):
-3    if ht == 0:
-4      for j = 0 to x.m - 1: if key == x.entry[j].key: return x.entry[j].val
-5    else:
-6      for j = 0 to x.m - 1:
-7        if j + 1 == x.m or key < x.entry[j+1].key: return SEARCH(x.entry[j].child, key, ht - 1)
+1  GET(key):
+2    node = root
+3    while node is not a leaf:
+4      i = index of the last entry with entry.key <= key, or 0 if there is none
+5      node = node.entries[i].child
+6    for each entry in node.entries:
+7      if entry.key == key: return entry.value
 8    return null
 ```
 
 **Operation: Put**
 
 ```
-1  PUT(key, val):
-2    u = INSERT(root, key, val, height)
-3    if u is null: return
-4    root = NODE(ENTRY(root.entry[0].key, root), ENTRY(u.entry[0].key, u)); height = height + 1
-5  INSERT(h, key, val, ht):
-6    t = ENTRY(key, val)
-7    if ht == 0: j = number of entries in h with key < new key
-8    else:
-9      find j with j + 1 == h.m or key < h.entry[j+1].key
-10     if key < h.entry[j].key: h.entry[j].key = key
-11     u = INSERT(h.entry[j].child, key, val, ht - 1)
-12     if u is null: return null
-13     t = ENTRY(u.entry[0].key, u); j = j + 1
-14   shift h.entry[j..] right; h.entry[j] = t; h.m = h.m + 1
-15   if h.m < M: return null
-16   return SPLIT(h)
-17 SPLIT(h):
-18   t = NODE(h.entry[M/2 .. M-1]); h.m = M / 2
-19   return t
+1  PUT(key, value):
+2    path = empty stack; node = root
+3    while node is not a leaf:
+4      i = index of the last entry with entry.key <= key, or 0 if there is none
+5      if key < node.entries[i].key: node.entries[i].key = key
+6      path.push(node); node = node.entries[i].child
+7    if key is in node.entries: return
+8    insert ENTRY(key, value) into node.entries in key order; size = size + 1
+9    while node.entries has M entries:
+10     sibling = NODE(upper M / 2 entries of node); node keeps the lower M / 2
+11     if path is empty:
+12       root = NODE(ENTRY(node.entries[0].key, node), ENTRY(sibling.entries[0].key, sibling))
+13       height = height + 1; return
+14     parent = path.pop()
+15     insert ENTRY(sibling.entries[0].key, sibling) into parent right after node's entry
+16     node = parent
 ```
 
 Operation ids are `get` (Get, `inputKind: "key"`) and `put` (Put, `inputKind: "key"`). Every step carries `variables.probes`, the number of nodes visited so far, which is what the reference's log_M(n) bound counts.
 
 | Operation | Line | Description | Highlight |
 |---|---|---|---|
-| get / put, descend | 7 / 9 | "`{key}` < `{entry[j+1].key}`, so descend into child `{j}`." | node `current`, `entryIndex = j` |
-| get / put, descend into the last child | 7 / 9 | "`{key}` >= `{entry[j].key}`, the last guide key, so descend into child `{j}`." | node `current`, `entryIndex = j` |
-| put, new minimum | 10 | "`{key}` is smaller than the guide key `{old}`, so the guide key becomes `{key}`." | node `new`, `entryIndex = j` |
-| get, compare in a leaf (the hit replaces the compare for the matching entry) | 4 | "Comparing `{key}` with `{e.key}` in this leaf." | leaf `current`, `entryIndex` |
-| get, hit | 4 | "`{key}` matches this entry: HIT." | leaf `found`, `entryIndex` |
+| get / put, descend | 4 | "`{key}` < `{entries[i+1].key}`, so descend into child `{i}`." | node `current`, `entryIndex = i` |
+| get / put, descend into the last child | 4 | "`{key}` >= `{entries[i].key}`, the last guide key, so descend into child `{i}`." | node `current`, `entryIndex = i` |
+| put, new minimum | 5 | "`{key}` is smaller than the guide key `{old}`, so the guide key becomes `{key}`." | node `new`, `entryIndex = j` |
+| get, compare in a leaf (the hit replaces the compare for the matching entry) | 7 | "Comparing `{key}` with `{e.key}` in this leaf." | leaf `current`, `entryIndex` |
+| get, hit | 7 | "`{key}` matches this entry: HIT." | leaf `found`, `entryIndex` |
 | get, miss | 8 | "`{key}` is not in this leaf: MISS." | leaf `current` |
 | put, duplicate | 7 | "`{key}` is already in this leaf, so nothing changes." | leaf `found`, stop |
-| put, at the 30-key cap | 2 | "The tree holds 30 keys, the most this demo shows, so `{key}` is not added." | none, stop |
-| put, place | 14 | "Placing `{key}` at position `{j}` in the leaf: it now holds `{m}` entries." | leaf `new`, `entryIndex = j` |
-| put, split | 18 | "The node holds `{M}` entries, so split it: `{k0}` and `{k1}` stay, `{k2}` and `{k3}` move to a new node." | both nodes `split` |
-| put, parent gains an entry | 14 | "Adding guide key `{u.entry[0].key}` for the new node to the parent at position `{j}`: it now holds `{m}` entries." | parent `new`, `entryIndex = j` |
-| put, root split | 4 | "The root split into two nodes, so a new root above them adds a level: height is now `{height}`." | new root `new` |
+| put, at the 30-key cap | 1 | "The tree holds 30 keys, the most this demo shows, so `{key}` is not added." | none, stop |
+| put, place | 8 | "Placing `{key}` at position `{j}` in the leaf: it now holds `{m}` entries." | leaf `new`, `entryIndex = j` |
+| put, split | 10 | "The node holds `{M}` entries, so split it: `{k0}` and `{k1}` stay, `{k2}` and `{k3}` move to a new node." | both nodes `split` |
+| put, parent gains an entry | 15 | "Adding guide key `{u.entry[0].key}` for the new node to the parent at position `{j}`: it now holds `{m}` entries." | parent `new`, `entryIndex = j` |
+| put, root split | 12 | "The root split into two nodes, so a new root above them adds a level: height is now `{height}`." | new root `new` |
 
 Seed: put `50, 20, 70, 30, 60` in that order, giving a root with guide keys `20, 50` over the leaves `[20, 30]` and `[50, 60, 70]`. Putting `80` splits the second leaf and the root still has room; putting `10` then `5` rewrites the guide key, splits the first leaf, and splits the root (height 2). Randomize: 8 to 12 unique keys in 1 to 99, inserted in random order.
 
@@ -1537,10 +1536,10 @@ interface StudyPlanSnapshot {
 
 ```
 1  ADD_COURSE(code):
-2    i = HASH(code)
-3    if code is in bucket[i]: return
-4    v = V; V = V + 1; add vertex v to the digraph
-5    append (code, v) to bucket[i]
+2    index = HASH(code)
+3    if code is in buckets[index]: return
+4    course = V; V = V + 1; add vertex course to the digraph
+5    append (code, course) to buckets[index]
 ```
 
 | Trigger | Line | Description | Focus |
@@ -1557,10 +1556,10 @@ interface StudyPlanSnapshot {
 
 ```
 1  ADD_PREREQUISITE(before, after):
-2    v = GET(before)
-3    w = GET(after)
-4    if v or w is missing, or v == w: return
-5    add edge v to w
+2    beforeCourse = GET(before)
+3    afterCourse = GET(after)
+4    if either is missing, or beforeCourse == afterCourse: return
+5    add edge beforeCourse to afterCourse
 ```
 
 | Trigger | Line | Description | Focus |
@@ -1580,15 +1579,15 @@ Both GET calls count compares in `variables.compares`.
 
 ```
 1  BUILD_PLAN():
-2    for each course v, in vertex order:
-3      if v is unmarked: DFS(v)
+2    for each course, in vertex order:
+3      if course is unvisited: DFS(course)
 4    return the reverse of postorder
-5  DFS(v):
-6    mark v; put v on the call stack
-7    for each course w that lists v as a prerequisite:
-8      if w is on the call stack: report a cycle
-9      else if w is unmarked: DFS(w)
-10   take v off the call stack; add v to postorder
+5  DFS(course):
+6    mark course visited; put course on the call stack
+7    for each dependent that lists course as a prerequisite:
+8      if dependent is on the call stack: report a cycle
+9      else if dependent is unvisited: DFS(dependent)
+10   take course off the call stack; add course to postorder
 ```
 
 | Trigger | Line | Description | Focus |
@@ -1609,8 +1608,8 @@ Both GET calls count compares in `variables.compares`.
 ```
 1  BUILD_PLAN_ALPHABETICAL():
 2    order = every course code, sorted A to Z
-3    for each prerequisite edge v to w:
-4      if w comes before v in order: count a violation
+3    for each prerequisite edge course to dependent:
+4      if dependent comes before course in order: count a violation
 5    return order
 ```
 
@@ -1656,14 +1655,14 @@ A patient is more urgent than another when its severity is higher, or the severi
 ```
 1  ADMIT(severity, record):
 2    if archive.get(record) is null: archive.put(record)
-3    p = new Patient(nextArrival, severity, record)
-4    pq.insert(p)
-5  SWIM(k):
-6    while k > 1 and pq[k] is more urgent than pq[k / 2]:
-7      exchange pq[k] and pq[k / 2]; k = k / 2
+3    patient = new Patient(nextArrival, severity, record)
+4    heap.insert(patient)
+5  SWIM(index):
+6    while index > 1 and heap[index] is more urgent than heap[index / 2]:
+7      SWAP(index, index / 2); index = index / 2
 ```
 
-The arrival listing is lines 1 to 3 and `4    queue.enqueue(p)`.
+The arrival listing is lines 1 to 3 and `4    queue.enqueue(patient)`.
 
 | Trigger | Line | Description | Focus |
 |---|---|---|---|
@@ -1683,14 +1682,14 @@ The arrival listing is lines 1 to 3 and `4    queue.enqueue(p)`.
 
 ```
 1  TREAT_NEXT():
-2    if pq is empty: return
-3    p = pq[1]; move pq[n] to pq[1]; n = n - 1
+2    if heap is empty: return
+3    patient = heap[1]; move heap[size] to heap[1]; size = size - 1
 4    SINK(1)
-5  SINK(k):
-6    while 2k <= n:
-7      j = the more urgent child of k
-8      if pq[k] is at least as urgent as pq[j]: stop
-9      exchange pq[k] and pq[j]; k = j
+5  SINK(index):
+6    while 2 * index <= size:
+7      child = the more urgent child of index
+8      if heap[index] is at least as urgent as heap[child]: stop
+9      SWAP(index, child); index = child
 ```
 
 The arrival listing is:
@@ -1698,8 +1697,8 @@ The arrival listing is:
 ```
 1  TREAT_NEXT():
 2    if queue is empty: return
-3    p = queue.dequeue()
-4    if someone still waiting is more urgent than p: bypassed = bypassed + 1
+3    patient = queue.dequeue()
+4    if someone still waiting is more urgent than patient: bypassed = bypassed + 1
 ```
 
 | Trigger | Line | Description | Focus |
@@ -1727,10 +1726,10 @@ The arrival listing is:
 
 ```
 1  FIND_RECORD(record):
-2    node = root
-3    for each level above the leaves:
+2    node = archive.root
+3    while node is not a leaf:
 4      node = the child whose range holds record
-5    search the leaf for record
+5    search node.entries for record
 ```
 
 The Section 10.12 get steps run unchanged with their lines mapped (descend to 4, leaf compare and HIT or MISS to 5), then one summary step on line 5: "Record `{record}` found after `{k}` block reads." or "Record `{record}` is not in the archive: `{k}` block reads." (`1 block read`). `variables` carries `block reads`.
@@ -1763,7 +1762,7 @@ interface CanteenSnapshot {
 
 At most 12 orders wait at once, and the day takes at most 32 orders. The seed runs place, place, place, serve, serve, place, serve, place, place on each design: the queue ends with log 101, 102, 103 (capacity 4) and 104, 105, 106 waiting; the stack ends with log 103, 102, 104 and 106, 105, 101 waiting (106 on top), `skipped = 3`. Randomize runs 14 to 20 random place and serve actions from an empty counter.
 
-**Canvas.** Two labeled rows: the waiting orders as a `LinkedRow` (`first` and `last` pointers for the queue, `top` for the stack) and the served log as an `ArrayRow` with `lo`, `mid`, and `hi` pointers during a binary search.
+**Canvas.** Two labeled rows: the waiting orders as a `LinkedRow` (`first` and `last` pointers for the queue, `top` for the stack) and the served log as an `ArrayRow` with `low`, `middle`, and `high` pointers during a binary search.
 
 **Place order** (`place-queue`, `place-stack`; `inputKind: "none"`)
 
@@ -1790,8 +1789,8 @@ The stack listing ends with `3    pending.push(number)`.
 1  SERVE_NEXT():
 2    if pending is empty: return
 3    number = pending.dequeue()
-4    if n == log.length: resize the log to 2 * log.length
-5    log[n] = number; n = n + 1
+4    if size == log.length: resize the log to 2 * log.length
+5    log[size] = number; size = size + 1
 ```
 
 The stack listing reads `3    number = pending.pop()`.
@@ -1811,28 +1810,28 @@ The stack listing reads `3    number = pending.pop()`.
 
 ```
 1  FIND_ORDER(number):
-2    lo = 0; hi = n - 1
-3    while lo <= hi:
-4      mid = (lo + hi) / 2
-5      if number < log[mid]: hi = mid - 1
-6      else if number > log[mid]: lo = mid + 1
-7      else: return mid
+2    low = 0; high = size - 1
+3    while low <= high:
+4      middle = (low + high) / 2
+5      if number < log[middle]: high = middle - 1
+6      else if number > log[middle]: low = middle + 1
+7      else: return middle
 8    return NOT_SERVED
 ```
 
 | Trigger | Line | Description | Highlight |
 |---|---|---|---|
-| Probe | 4 | "lo = `{lo}`, hi = `{hi}`, so mid = `{mid}`: order `{log[mid]}`." | `current`, range |
+| Probe | 4 | "low = `{lo}`, high = `{hi}`, so middle = `{mid}`: order `{log[mid]}`." | `current`, range |
 | Smaller | 5 | "`{num}` < `{log[mid]}`, so search the left half." | range |
 | Larger | 6 | "`{num}` > `{log[mid]}`, so search the right half." | range |
 | Found | 7 | "Found order `{num}` at position `{mid}` after `{c}` compares." | `found` |
-| Not found | 8 | "lo is past hi after `{c}` compares: order `{num}` is not in the served log." | none |
+| Not found | 8 | "low is past high after `{c}` compares: order `{num}` is not in the served log." | none |
 
 **Find order, sequential search** (`find-sequential`, `variants: ["stack"]`, `inputKind: "key"`)
 
 ```
 1  FIND_ORDER(number):
-2    for i = 0 to n - 1:
+2    for i = 0 to size - 1:
 3      if log[i] == number: return i
 4    return NOT_SERVED
 ```

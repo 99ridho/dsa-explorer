@@ -104,7 +104,7 @@ export function buildTree(keys: number[]): BTreeSnapshot {
   return keys.reduce((tree, key) => runPut(tree, key).finalSnapshot, emptyTree())
 }
 
-/** algs4's descend rule: child j when j + 1 == m or key < entry[j+1].key. */
+/** Line 4: the last entry whose key is <= key, or entry 0 when key is smaller than every guide key. */
 function childIndex(entries: { key: number }[], key: number): number {
   for (let j = 0; j < entries.length; j++) {
     if (j + 1 === entries.length || key < entries[j + 1].key) return j
@@ -131,17 +131,17 @@ export function runGet(state: BTreeState, key: number): OperationResult<BTreeSna
   const s = cloneSnapshot(state)
   let id = s.rootId
   for (let ht = s.height; ht > 0; ht--) {
-    const j = narrateDescend(rec, s, id, key, 7)
+    const j = narrateDescend(rec, s, id, key, 4)
     id = s.nodes[id].entries[j].childId!
   }
   const leaf = s.nodes[id]
   rec.probes += 1
   for (let j = 0; j < leaf.entries.length; j++) {
     if (leaf.entries[j].key === key) {
-      rec.push(s, 4, `${key} matches this entry: HIT.`, [{ id, highlight: 'found', entryIndex: j }])
+      rec.push(s, 7, `${key} matches this entry: HIT.`, [{ id, highlight: 'found', entryIndex: j }])
       return { steps: rec.steps, finalSnapshot: withLayout(s) }
     }
-    rec.push(s, 4, `Comparing ${key} with ${leaf.entries[j].key} in this leaf.`, [{ id, highlight: 'current', entryIndex: j }])
+    rec.push(s, 7, `Comparing ${key} with ${leaf.entries[j].key} in this leaf.`, [{ id, highlight: 'current', entryIndex: j }])
   }
   rec.push(s, 8, `${key} is not in this leaf: MISS.`, [{ id, highlight: 'current' }])
   return { steps: rec.steps, finalSnapshot: withLayout(s) }
@@ -149,7 +149,7 @@ export function runGet(state: BTreeState, key: number): OperationResult<BTreeSna
 
 // ---------- put ----------
 
-/** Lines 17 to 19: the upper half of a full node moves to a new node, which is returned. */
+/** Line 10: the upper half of a full node moves to a new node, which is returned. */
 function split(rec: StepRecorder, s: BTreeSnapshot, id: string): string {
   const h = s.nodes[id]
   const half = s.M / 2
@@ -162,7 +162,7 @@ function split(rec: StepRecorder, s: BTreeSnapshot, id: string): string {
   const keys = [...kept, ...moved].map((e) => e.key)
   rec.push(
     s,
-    18,
+    10,
     `The node holds ${s.M} entries, so split it: ${keys[0]} and ${keys[1]} stay, ${keys[2]} and ${keys[3]} move to a new node.`,
     [
       { id, highlight: 'split' },
@@ -172,7 +172,7 @@ function split(rec: StepRecorder, s: BTreeSnapshot, id: string): string {
   return tId
 }
 
-/** Lines 5 to 16. Returns the id of the new sibling when `id` split, else null. */
+/** Lines 3 to 16, written recursively: returns the id of the new sibling when `id` split, else null. */
 function insert(rec: StepRecorder, s: BTreeSnapshot, id: string, key: number, ht: number): string | null | 'duplicate' {
   const h = s.nodes[id]
   let j: number
@@ -187,11 +187,11 @@ function insert(rec: StepRecorder, s: BTreeSnapshot, id: string, key: number, ht
     j = h.entries.filter((e) => e.key < key).length
     entry = { key, childId: null }
   } else {
-    j = narrateDescend(rec, s, id, key, 9)
+    j = narrateDescend(rec, s, id, key, 4)
     if (key < h.entries[j].key) {
       const old = h.entries[j].key
       h.entries[j].key = key
-      rec.push(s, 10, `${key} is smaller than the guide key ${old}, so the guide key becomes ${key}.`, [{ id, highlight: 'new', entryIndex: j }])
+      rec.push(s, 5, `${key} is smaller than the guide key ${old}, so the guide key becomes ${key}.`, [{ id, highlight: 'new', entryIndex: j }])
     }
     const u = insert(rec, s, h.entries[j].childId!, key, ht - 1)
     if (u === 'duplicate') return 'duplicate'
@@ -203,9 +203,9 @@ function insert(rec: StepRecorder, s: BTreeSnapshot, id: string, key: number, ht
   h.entries.splice(j, 0, entry)
   if (ht === 0) {
     s.n += 1
-    rec.push(s, 14, `Placing ${key} at position ${j} in the leaf: it now holds ${h.entries.length} entries.`, [{ id, highlight: 'new', entryIndex: j }])
+    rec.push(s, 8, `Placing ${key} at position ${j} in the leaf: it now holds ${h.entries.length} entries.`, [{ id, highlight: 'new', entryIndex: j }])
   } else {
-    rec.push(s, 14, `Adding guide key ${entry.key} for the new node to the parent at position ${j}: it now holds ${h.entries.length} entries.`, [{ id, highlight: 'new', entryIndex: j }])
+    rec.push(s, 15, `Adding guide key ${entry.key} for the new node to the parent at position ${j}: it now holds ${h.entries.length} entries.`, [{ id, highlight: 'new', entryIndex: j }])
   }
   if (h.entries.length < s.M) return null
   return split(rec, s, id)
@@ -216,7 +216,7 @@ export function runPut(state: BTreeState, key: number): OperationResult<BTreeSna
   const s = cloneSnapshot(state)
 
   if (s.n >= MAX_KEYS && !Object.values(s.nodes).some((node) => node.external && node.entries.some((e) => e.key === key))) {
-    rec.push(s, 2, `The tree holds ${MAX_KEYS} keys, the most this demo shows, so ${key} is not added.`)
+    rec.push(s, 1, `The tree holds ${MAX_KEYS} keys, the most this demo shows, so ${key} is not added.`)
     return { steps: rec.steps, finalSnapshot: withLayout(s) }
   }
 
@@ -238,7 +238,7 @@ export function runPut(state: BTreeState, key: number): OperationResult<BTreeSna
   }
   s.rootId = rootId
   s.height += 1
-  rec.push(s, 4, `The root split into two nodes, so a new root above them adds a level: height is now ${s.height}.`, [{ id: rootId, highlight: 'new' }])
+  rec.push(s, 12, `The root split into two nodes, so a new root above them adds a level: height is now ${s.height}.`, [{ id: rootId, highlight: 'new' }])
   return { steps: rec.steps, finalSnapshot: withLayout(s) }
 }
 

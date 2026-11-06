@@ -44,7 +44,7 @@ export const linkedListStructure: StructureSpec<LinkedListSnapshot> = {
         'class LinkedList',
         '  first: Node  the first node, null when empty',
         '  last: Node   the last node, null when empty',
-        '  n: int       number of nodes',
+        '  size: int    number of nodes',
         'class Node',
         '  item: Item',
         '  next: Node   the next node, null at the end',
@@ -52,7 +52,7 @@ export const linkedListStructure: StructureSpec<LinkedListSnapshot> = {
       fields: [
         { name: 'first', type: 'Node', role: 'the first node, null when empty' },
         { name: 'last', type: 'Node', role: 'the last node, so insertLast does not walk the list' },
-        { name: 'n', type: 'int', role: 'number of nodes' },
+        { name: 'size', type: 'int', role: 'number of nodes' },
         { name: 'Node.item', type: 'Item', role: 'the value the node holds' },
         { name: 'Node.next', type: 'Node', role: 'the next node, null at the end' },
       ],
@@ -66,6 +66,6 @@ export const linkedListStructure: StructureSpec<LinkedListSnapshot> = {
   liveFields: (snapshot) => ({
     first: snapshot.firstId ?? 'null',
     last: snapshot.lastId ?? 'null',
-    n: walk(snapshot.nodes, snapshot.firstId).length,
+    size: walk(snapshot.nodes, snapshot.firstId).length,
   }),
 }

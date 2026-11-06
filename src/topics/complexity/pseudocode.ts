@@ -1,11 +1,11 @@
 // SPEC.md §10.5: pseudocode, verbatim. Both operations share the listing.
 const LISTING = [
   'DOUBLING_RATIO(problem):',
-  '  prev = 0',
+  '  previous = 0',
   '  for N = start, 2 * start, 4 * start, ... (6 rounds):',
   '    accesses = ACCESSES(problem, N)',
-  '    ratio = accesses / prev',
-  '    prev = accesses',
+  '    ratio = accesses / previous',
+  '    previous = accesses',
   'ACCESSES(problem, N):',
   '  1-sum: N items, 1 access each',
   '  2-sum: N(N-1)/2 pairs, 2 accesses each',

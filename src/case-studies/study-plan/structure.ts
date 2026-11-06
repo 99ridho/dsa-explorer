@@ -6,7 +6,7 @@ import type { StudyPlanSnapshot } from './types'
 export const studyPlanStructure: StructureSpec<StudyPlanSnapshot> = {
   adt: {
     name: 'Study plan builder',
-    summary: 'A hash index from course code to vertex number beside a digraph whose edge v to w means take v before w.',
+    summary: 'A hash index from course code to vertex number beside a digraph whose edge from course to dependent means take course before dependent.',
     operations: [
       {
         name: 'addCourse',
@@ -25,7 +25,7 @@ export const studyPlanStructure: StructureSpec<StudyPlanSnapshot> = {
     ],
     invariants: [
       'Every course code appears in exactly one bucket, the one HASH(code) names.',
-      'Vertex v of the digraph is the course whose code is codes[v].',
+      'Vertex course of the digraph is the course whose code is codes[course].',
       'A study plan exists only when the digraph is a DAG.',
     ],
   },
@@ -34,14 +34,14 @@ export const studyPlanStructure: StructureSpec<StudyPlanSnapshot> = {
       label: 'Hash index and digraph',
       declaration: [
         'class StudyPlan',
-        '  st: SeparateChainingHashST<String, int>   course code to vertex, M = 11',
-        '  keys: String[]                            keys[v] is the code of vertex v',
-        '  adj: List<int>[]                          adj[v] holds every w that needs v first',
+        '  courseIndex: SeparateChainingHashST<String, int>   course code to vertex, M = 11',
+        '  codes: String[]                                    codes[course] is the code of vertex course',
+        '  adjacent: List<int>[]                              adjacent[course] holds every dependent that needs course first',
       ],
       fields: [
-        { name: 'st', type: 'HashST<String, int>', role: 'finds a vertex from a code' },
-        { name: 'keys', type: 'String[]', role: 'finds a code from a vertex' },
-        { name: 'adj', type: 'List<int>[]', role: 'the prerequisite edges, one list per course' },
+        { name: 'courseIndex', type: 'HashST<String, int>', role: 'finds a vertex from a code' },
+        { name: 'codes', type: 'String[]', role: 'finds a code from a vertex' },
+        { name: 'adjacent', type: 'List<int>[]', role: 'the prerequisite edges, one list per course' },
       ],
     },
   },

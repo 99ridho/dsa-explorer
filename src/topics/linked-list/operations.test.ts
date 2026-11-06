@@ -71,7 +71,7 @@ describe('traverse', () => {
     expect(steps[0].description).toBe('Visit 4. Visited so far: 4.')
     expect(steps[2].snapshot.highlight).toEqual({ n0: 'visited', n1: 'visited', n2: 'current' })
     expect(steps[2].variables).toEqual({ visited: '4, 8, 15' })
-    expect(steps[4].description).toBe('x is null, so the traversal ends after 4 nodes.')
+    expect(steps[4].description).toBe('node is null, so the traversal ends after 4 nodes.')
     expect(values(finalSnapshot)).toEqual(SEED)
   })
 

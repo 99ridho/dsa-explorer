@@ -53,7 +53,7 @@ SPEC.md §18 makes the antislop rule set binding on every piece of text in this 
 - **Linked snapshots store real links** (`nodes` map + `firstId`/`lastId` + `nextId`, helpers in `src/lib/linked-nodes.ts`), never an ordered array: a step can show a node that exists but is not yet reachable, and `nextId` lives in the snapshot so `run()` stays pure. Node ids are `n${nextId}`.
 - **Row canvases are shared.** `ArrayRow` and `LinkedRow` in `src/components/visualizer/canvas/` draw every array-backed and linked topic; highlight-kind classes live in `kinds.ts` there. A topic's `canvas.tsx` only maps its snapshot to cells.
 - **`inputKind: 'text'`** is a free-form field (Stack's Evaluate expression). An operation may set `placeholder` to override the per-kind default in `input-parsing.ts`.
-- **B-tree `M` is fixed at 4** (`BTREE_M`). Guide keys always equal their subtree's smallest key (one line beyond algs4, SPEC §10.12); `layoutMultiwayTree` in `tree-layout.ts` positions nodes by subtree width.
+- **B-tree `M` is fixed at 4** (`BTREE_M`). Guide keys always equal their subtree's smallest key (one line beyond algs4, SPEC §10.12); the listing and the three snippets are iterative, with a `path` stack instead of recursion (ADR-014); `layoutMultiwayTree` in `tree-layout.ts` positions nodes by subtree width.
 - **Counts pluralize in narration** (`plural()` in `linked-nodes.ts`): "1 item", never "1 items".
 - **Live fields are computed, never stored.** `structure.liveFields(snapshot, variant)` returns at most six scalars read from the snapshot; `src/topics/structure.test.ts` runs it on the seed and on every step of every seed operation and caps each chip's `key = value` text at 14 characters so it fits one `LiveFields` track. Keep the key set constant per representation, so the row never changes shape while stepping.
 - **Tree canvases render at a fixed height** (heap 200, BST 260, B-tree 300): a narrowing `viewBox` must not grow the card mid-operation, or the page moves on phones (scroll anchoring). The heap's empty message takes the same height.
@@ -92,7 +92,7 @@ Single-page, client-only React app. No backend, no persistence beyond the dark-m
 | `linked-list` | Complete: insert first / insert last / remove first / traverse, 8 tests. |
 | `sorting` | Complete: load / selection sort / insertion sort / shellsort with compare and exchange counts as badges, 7 tests. |
 | `searching` | Complete: get / put on an unordered list (sequential search) or an ordered array (binary search with rank), FrequencyCounter values, 9 tests. |
-| `b-tree` | Complete: get / put with leaf, parent, and root splits (algs4 `BTree.java`, M = 4, guide keys kept equal to the subtree minimum), multiway SVG layout, 10 tests. |
+| `b-tree` | Complete: get / put with leaf, parent, and root splits (algs4 `BTree.java` semantics in an iterative listing, M = 4, guide keys kept equal to the subtree minimum), multiway SVG layout, 10 tests. |
 | case study `canteen-orders` | Complete (Weeks 1–7): place / serve / find on a queue with a sorted resizing log, or a stack with an unsorted log (`skipped` counter), 8 tests, 8 quiz questions. |
 | case study `er-triage` | Complete (Weeks 9–11): admit / treat on a max heap or an arrival queue (`bypassed` counter), record lookup in a B-tree archive (lifted §10.12 get steps), 10 tests, 8 quiz questions. |
 | case study `study-plan` | Complete (Weeks 12–15): add course (string-hash index) / add prerequisite (typed `PR1 before PR2`) / build plan by topological sort with cycle report, or alphabetically with a violation count, 9 tests, 8 quiz questions. |
@@ -106,6 +106,7 @@ All twelve RPS topics are implemented (SPEC §10.1 to §10.12, expansion of 2026
 - **Animation**: import from `motion/react`. Give every `motion.*` SVG element a full `initial` for any attribute you `animate` (an undefined `x1`/`y1` throws a DOM warning).
 - **Theme colors in SVG**: use `var(--color-accent)`, `var(--color-chart-5)`, etc. so canvases follow dark mode; never hard-code hex.
 - **Step descriptions** are plain strings following the spec's templates (e.g. `` `${key} < ${node.key} → go left` ``). Extra runtime detail goes in `variables`, rendered as badges.
+- **Names in listings** (SPEC §10, ADR-014): pseudocode, the three snippets, Structure declarations, and narration share one vocabulary. No one-letter names except loop counters and `N`, `M`, `V`, `E`; no abbreviations (`value`, not `val`); a count is `size`, a backing array `items`. A rename keeps the listing's line count, so the step tables keep their Line column.
 - **TypeScript**: `tsc -b` with `tsconfig.app.json` (`src/`, tests excluded) and `tsconfig.node.json` (Vite + Vitest configs). `baseUrl` is not used (deprecated in TS 6); `paths` alone resolves `@/`.
 
 ## Decisions

@@ -52,7 +52,7 @@ export const triageQuiz: QuizQuestion[] = [
     kind: 'choice',
     id: 'triage-root',
     prompt: 'Where does a max heap keep the most urgent patient?',
-    choices: ['At the root, pq[1]', 'At the last position, pq[n]', 'In the leftmost leaf', 'Anywhere, so the heap must be scanned'],
+    choices: ['At the root, heap[1]', 'At the last position, heap[size]', 'In the leftmost leaf', 'Anywhere, so the heap must be scanned'],
     answer: 0,
     explanation: 'Week 11: in a heap-ordered tree each key is at least as large as the keys in its children, so the largest key is always at the root.',
     topicSlug: 'binary-heap',

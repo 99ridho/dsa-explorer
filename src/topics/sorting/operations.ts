@@ -18,7 +18,7 @@ class SortRecorder {
     const snapshot = cloneSnapshot(base)
     if (indices.length > 0) snapshot.highlight = { indices, kind }
     const variables: Step<SortingSnapshot>['variables'] = { compares: this.compares, exchanges: this.exchanges }
-    if (this.h !== undefined) variables.h = this.h
+    if (this.h !== undefined) variables.gap = this.h
     this.steps.push({ id: this.steps.length, description, highlightLine, snapshot, variables })
   }
 }
@@ -58,15 +58,15 @@ export function runSelectionSort(state: SortingState): OperationResult<SortingSn
   for (let i = 0; i < N; i++) {
     let min = i
     s.sortedUpTo = i
-    rec.push(s, 3, `Pass ${i}: the smallest item so far is a[${i}] = ${a[i]}.`, [i], 'marked')
+    rec.push(s, 3, `Pass ${i}: the smallest item so far is items[${i}] = ${a[i]}.`, [i], 'marked')
     for (let j = i + 1; j < N; j++) {
       rec.compares += 1
-      const head = `Comparing a[${j}] = ${a[j]} with the minimum a[${min}] = ${a[min]}`
+      const head = `Comparing items[${j}] = ${a[j]} with the minimum items[${min}] = ${a[min]}`
       if (a[j] < a[min]) {
         min = j
-        rec.push(s, 5, `${head}: ${a[j]} is smaller, so min becomes ${j}.`, [j], 'marked')
+        rec.push(s, 5, `${head}: ${a[j]} is smaller, so minIndex becomes ${j}.`, [j], 'marked')
       } else {
-        rec.push(s, 5, `${head}: ${a[min]} is smaller, so min stays ${min}.`, [j, min], 'comparing')
+        rec.push(s, 5, `${head}: ${a[min]} is smaller, so minIndex stays ${min}.`, [j, min], 'comparing')
       }
     }
     rec.exchanges += 1
@@ -75,10 +75,10 @@ export function runSelectionSort(state: SortingState): OperationResult<SortingSn
       const m = a[min]
       exch(a, i, min)
       s.sortedUpTo = i + 1
-      rec.push(s, 6, `Exchanging a[${i}] = ${v} with a[${min}] = ${m}, so ${m} is in its final position.`, [i, min], 'exchanging')
+      rec.push(s, 6, `Exchanging items[${i}] = ${v} with items[${min}] = ${m}, so ${m} is in its final position.`, [i, min], 'exchanging')
     } else {
       s.sortedUpTo = i + 1
-      rec.push(s, 6, `a[${i}] = ${a[i]} is already the minimum, so exchanging it with itself changes nothing.`, [i], 'sorted')
+      rec.push(s, 6, `items[${i}] = ${a[i]} is already the minimum, so exchanging it with itself changes nothing.`, [i], 'sorted')
     }
   }
   s.sortedUpTo = N
@@ -95,7 +95,7 @@ export function runInsertionSort(state: SortingState): OperationResult<SortingSn
 
   for (let i = 1; i < N; i++) {
     const v = a[i]
-    rec.push(s, 2, `Taking a[${i}] = ${v} and inserting it among the ${i} sorted items to its left.`, [i], 'marked')
+    rec.push(s, 2, `Taking items[${i}] = ${v} and inserting it among the ${i} sorted items to its left.`, [i], 'marked')
     let j = i
     for (; j >= 1; j--) {
       rec.compares += 1
@@ -104,16 +104,16 @@ export function runInsertionSort(state: SortingState): OperationResult<SortingSn
         const y = a[j - 1]
         exch(a, j, j - 1)
         rec.exchanges += 1
-        rec.push(s, 4, `a[${j}] = ${x} is smaller than a[${j - 1}] = ${y}, so exchange them.`, [j, j - 1], 'exchanging')
+        rec.push(s, 4, `items[${j}] = ${x} is smaller than items[${j - 1}] = ${y}, so exchange them.`, [j, j - 1], 'exchanging')
       } else {
         s.sortedUpTo = i + 1
-        rec.push(s, 5, `a[${j}] = ${a[j]} is not smaller than a[${j - 1}] = ${a[j - 1]}, so it stays: a[0..${i}] is sorted.`, [j, j - 1], 'comparing')
+        rec.push(s, 5, `items[${j}] = ${a[j]} is not smaller than items[${j - 1}] = ${a[j - 1]}, so it stays: items[0..${i}] is sorted.`, [j, j - 1], 'comparing')
         break
       }
     }
     if (j === 0) {
       s.sortedUpTo = i + 1
-      rec.push(s, 3, `${v} reached index 0, so a[0..${i}] is sorted.`)
+      rec.push(s, 3, `${v} reached index 0, so items[0..${i}] is sorted.`)
     }
   }
   s.sortedUpTo = N
@@ -130,14 +130,14 @@ export function runShellsort(state: SortingState): OperationResult<SortingSnapsh
   let h = 1
   while (h < N / 3) h = 3 * h + 1
   rec.h = h
-  rec.push(s, 3, `N = ${N}, so the increment sequence starts at h = ${h}.`)
+  rec.push(s, 3, `N = ${N}, so the gap sequence starts at gap = ${h}.`)
 
   while (h >= 1) {
-    rec.push(s, 4, `h-sorting the array with h = ${h}: every h-th item forms one subsequence.`)
+    rec.push(s, 4, `Sorting with gap = ${h}: items ${h} apart form one subsequence.`)
     for (let i = h; i < N; i++) {
       const group: number[] = []
       for (let k = i; k >= 0; k -= h) group.push(k)
-      rec.push(s, 5, `Taking a[${i}] = ${a[i]} and inserting it among the items ${h} apart to its left.`, group, 'marked')
+      rec.push(s, 5, `Taking items[${i}] = ${a[i]} and inserting it among the items ${h} apart to its left.`, group, 'marked')
       for (let j = i; j >= h; j -= h) {
         rec.compares += 1
         if (a[j] < a[j - h]) {
@@ -145,9 +145,9 @@ export function runShellsort(state: SortingState): OperationResult<SortingSnapsh
           const y = a[j - h]
           exch(a, j, j - h)
           rec.exchanges += 1
-          rec.push(s, 7, `a[${j}] = ${x} is smaller than a[${j - h}] = ${y}, ${h} positions to its left, so exchange them.`, [j, j - h], 'exchanging')
+          rec.push(s, 7, `items[${j}] = ${x} is smaller than items[${j - h}] = ${y}, ${h} positions to its left, so exchange them.`, [j, j - h], 'exchanging')
         } else {
-          rec.push(s, 8, `a[${j}] = ${a[j]} is not smaller than a[${j - h}] = ${a[j - h]}, so it stays.`, [j, j - h], 'comparing')
+          rec.push(s, 8, `items[${j}] = ${a[j]} is not smaller than items[${j - h}] = ${a[j - h]}, so it stays.`, [j, j - h], 'comparing')
           break
         }
       }
@@ -155,9 +155,9 @@ export function runShellsort(state: SortingState): OperationResult<SortingSnapsh
     const old = h
     h = Math.floor(h / 3)
     rec.h = h
-    rec.push(s, 9, `The array is ${old}-sorted, so h becomes ${h}.`)
+    rec.push(s, 9, `Items ${old} apart are in order, so gap becomes ${h}.`)
   }
-  rec.push(s, 4, `h is 0, so the array is sorted: ${rec.compares} compares and ${rec.exchanges} exchanges.`, all(a), 'sorted')
+  rec.push(s, 4, `gap is 0, so the array is sorted: ${rec.compares} compares and ${rec.exchanges} exchanges.`, all(a), 'sorted')
   return { steps: rec.steps, finalSnapshot: buildArray(a) }
 }
 

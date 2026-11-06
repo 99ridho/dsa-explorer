@@ -1,14 +1,14 @@
 // SPEC.md §7 `structure`: the graph ADT and its adjacency-list representation, from Weeks 13 to 15
-// §3.1 and §3.2 and the algs4 Graph / Digraph shapes. The visualizer stores an edge list and
+// §3.1 and §3.2, with the field names the snippets use (ADR-014). The visualizer stores an edge list and
 // draws the same graph (SPEC.md §10.4).
 import type { StructureSpec } from '@/types/step-engine'
 import type { GraphSnapshot } from './types'
 
 const adjacency = (label: string) => [
   `class ${label}`,
-  '  V: int            number of vertices, named 0 .. V-1',
-  '  E: int            number of edges',
-  '  adj: Bag<int>[V]  adj[v] lists the vertices next to v',
+  '  V: int                 number of vertices, named 0 .. V-1',
+  '  E: int                 number of edges',
+  '  adjacent: Bag<int>[V]  adjacent[vertex] lists the vertices next to vertex',
 ]
 
 export const graphStructure: StructureSpec<GraphSnapshot> = {
@@ -18,22 +18,22 @@ export const graphStructure: StructureSpec<GraphSnapshot> = {
     operations: [
       {
         name: 'addEdge',
-        signature: 'addEdge(v, w)',
+        signature: 'addEdge(start, end)',
         cost: { undirected: 'O(1)', directed: 'O(1)' },
-        note: 'Adds w to adj[v]; an undirected graph also adds v to adj[w].',
+        note: 'Adds end to adjacent[start]; an undirected graph also adds start to adjacent[end].',
         operationIds: ['add-edge'],
       },
       {
-        name: 'adj',
-        signature: 'adj(v)',
+        name: 'adjacent',
+        signature: 'adjacent(vertex)',
         cost: 'O(1) to start, then one step per neighbor',
-        note: 'Iterates over the vertices next to v; nearly every graph algorithm is built on this one call.',
+        note: 'Iterates over the vertices next to vertex; nearly every graph algorithm is built on this one call.',
       },
       { name: 'V', signature: 'V()', cost: 'O(1)' },
       { name: 'E', signature: 'E()', cost: 'O(1)' },
     ],
     invariants: [
-      'Vertices are the integers 0 .. V-1, so adj is an array indexed by vertex.',
+      'Vertices are the integers 0 .. V-1, so adjacent is an array indexed by vertex.',
       'This visualizer holds at most 10 vertices.',
     ],
   },
@@ -44,11 +44,11 @@ export const graphStructure: StructureSpec<GraphSnapshot> = {
       fields: [
         { name: 'V', type: 'int', role: 'number of vertices' },
         { name: 'E', type: 'int', role: 'number of edges, each stored once in this visualizer' },
-        { name: 'adj', type: 'Bag<int>[V]', role: 'adj[v] lists every vertex that shares an edge with v' },
+        { name: 'adjacent', type: 'Bag<int>[V]', role: 'adjacent[vertex] lists every vertex that shares an edge with vertex' },
       ],
       invariants: [
-        'An edge between v and w appears in both adj[v] and adj[w].',
-        'The degree of v is the length of adj[v], and the degrees sum to 2E.',
+        'An edge between start and end appears in both adjacent[start] and adjacent[end].',
+        'The degree of a vertex is the length of adjacent[vertex], and the degrees sum to 2E.',
       ],
     },
     directed: {
@@ -57,11 +57,11 @@ export const graphStructure: StructureSpec<GraphSnapshot> = {
       fields: [
         { name: 'V', type: 'int', role: 'number of vertices' },
         { name: 'E', type: 'int', role: 'number of directed edges' },
-        { name: 'adj', type: 'Bag<int>[V]', role: 'adj[v] lists the vertices that v points to' },
+        { name: 'adjacent', type: 'Bag<int>[V]', role: 'adjacent[vertex] lists the vertices that vertex points to' },
       ],
       invariants: [
-        'An edge from v to w appears in adj[v] only; the reverse digraph flips every edge.',
-        'The outdegree of v is the length of adj[v], and the outdegrees sum to E.',
+        'An edge from start to end appears in adjacent[start] only; the reverse digraph flips every edge.',
+        'The outdegree of a vertex is the length of adjacent[vertex], and the outdegrees sum to E.',
       ],
     },
   },

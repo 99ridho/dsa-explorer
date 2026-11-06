@@ -12,7 +12,7 @@ export const hashTableStructure: StructureSpec<HashTableSnapshot> = {
     operations: [
       {
         name: 'put',
-        signature: 'put(key, val)',
+        signature: 'put(key, value)',
         cost: {
           chaining: 'about N/M compares (Property L)',
           probing: 'about 1/2 (1 + 1/(1 - a)^2) probes on a miss, a = N/M (Proposition M)',
@@ -53,17 +53,17 @@ export const hashTableStructure: StructureSpec<HashTableSnapshot> = {
       declaration: [
         'class SeparateChainingHashST',
         '  M: int = 11    number of buckets',
-        '  st: Node[M]    st[i] is the first node of bucket i, null when empty',
-        '  n: int         number of keys',
+        '  buckets: Node[M]   buckets[i] is the first node of bucket i, null when empty',
+        '  size: int          number of keys',
         'class Node',
         '  key: Key',
-        '  val: Value',
+        '  value: Value',
         '  next: Node     the next pair in the same bucket',
       ],
       fields: [
         { name: 'M', type: 'int', role: 'number of buckets, 11 here' },
-        { name: 'st', type: 'Node[M]', role: 'one linked list per bucket' },
-        { name: 'n', type: 'int', role: 'number of keys across every bucket' },
+        { name: 'buckets', type: 'Node[M]', role: 'one linked list per bucket' },
+        { name: 'size', type: 'int', role: 'number of keys across every bucket' },
         { name: 'Node.next', type: 'Node', role: 'the next pair that hashed to the same bucket' },
       ],
       invariants: [
@@ -77,14 +77,14 @@ export const hashTableStructure: StructureSpec<HashTableSnapshot> = {
         'class LinearProbingHashST',
         '  M: int = 11    number of slots',
         '  keys: Key[M]   keys[i] is null while slot i is empty',
-        '  vals: Value[M]',
-        '  n: int         number of keys',
+        '  values: Value[M]',
+        '  size: int      number of keys',
       ],
       fields: [
         { name: 'M', type: 'int', role: 'number of slots, 11 here' },
         { name: 'keys', type: 'Key[M]', role: 'the keys, one per slot, null when empty' },
-        { name: 'vals', type: 'Value[M]', role: 'the value for the key in the same slot' },
-        { name: 'n', type: 'int', role: 'number of keys; the load factor is n / M' },
+        { name: 'values', type: 'Value[M]', role: 'the value for the key in the same slot' },
+        { name: 'size', type: 'int', role: 'number of keys; the load factor is size / M' },
       ],
       invariants: [
         'A key sits at hash(key) or in the unbroken run of filled slots after it, wrapping at M.',
@@ -96,9 +96,9 @@ export const hashTableStructure: StructureSpec<HashTableSnapshot> = {
   liveFields: (snapshot): Record<string, string | number> => {
     if (snapshot.strategy === 'chaining') {
       const n = snapshot.buckets.reduce((sum, b) => sum + b.length, 0)
-      return { M: snapshot.M, n, load: load(n, snapshot.M) }
+      return { M: snapshot.M, size: n, load: load(n, snapshot.M) }
     }
     const n = snapshot.slots.filter((s) => s !== null).length
-    return { M: snapshot.M, n, load: load(n, snapshot.M) }
+    return { M: snapshot.M, size: n, load: load(n, snapshot.M) }
   },
 }
